@@ -1,0 +1,28 @@
+# Default: SQLite (file-backed, no external services needed).
+# Uncomment the redis service + REDIS_URL to enable the distributed cache.
+services:
+  backend:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      CORS_ORIGIN: http://localhost:5173
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-prod}
+      DEVICE_PROVISIONING_KEY: ${DEVICE_PROVISIONING_KEY:-change-me-tv-key}
+      DATABASE_FILE: /app/data/squash.sqlite
+      # REDIS_URL: redis://redis:6379
+      SPORTRADAR_API_KEY: ${SPORTRADAR_API_KEY:-}
+      SPORTRADAR_BASE_URL: ${SPORTRADAR_BASE_URL:-https://api.sportradar.com/squash/trial/v1/en}
+      SPORTRADAR_ENABLED: ${SPORTRADAR_ENABLED:-false}
+    volumes:
+      - squash-data:/app/data
+    restart: unless-stopped
+
+  # redis:
+  #   image: redis:7-alpine
+  #   ports: ['6379:6379']
+
+volumes:
+  squash-data:

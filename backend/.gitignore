@@ -1,0 +1,5 @@
+node_modules
+dist
+*.sqlite
+.env
+.nm_trash_*
