@@ -63,6 +63,19 @@ export interface Player {
   id: string
   name: string
   played: number
+  /** Player nationality (from Sportradar competitor) */
+  country?: Country
+  /** 'male' | 'female' when provided by the feed */
+  gender?: string | null
+  /** Match stats derived from synced results */
+  won?: number
+  lost?: number
+  /** Games won-lost across matches, e.g. "42-31" */
+  games?: string
+  /** Win percentage (0-100) */
+  winPct?: number
+  /** Global rank by wins (null if no completed matches) */
+  rank?: number | null
 }
 
 /** Live scoreboard state shared between the TV and controller views. */

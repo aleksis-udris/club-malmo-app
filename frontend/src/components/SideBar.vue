@@ -21,7 +21,7 @@ const groups: { heading: string; items: NavItem[] }[] = [
   {
     heading: 'Sweden',
     items: [
-      { to: '/sweden', label: 'Club Sweden', icon: '🇸🇪' },
+      { to: '/sweden', label: 'Tournament', icon: '🏆' },
       { to: '/players', label: 'Players', icon: '👥' },
     ],
   },

@@ -9,18 +9,33 @@ const year = new Date().getFullYear()
     <div>
       <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Contact</h3>
       <ul class="mt-3 space-y-1.5 text-sm text-slate-500">
-        <li>Sweden Squash Federation</li>
-        <li>The Squash Club of Malmö</li>
-        <li><a class="hover:text-brand-700" href="#">info@swedensquash.se</a></li>
-        <li><a class="hover:text-brand-700" href="#">+46 40 123 45</a></li>
+        <li>The Club Malmoe</li>
+        <li><a class="hover:text-brand-700" href="#">http://www.theclubmalmoe.se/</a></li>
+        <li><a class="hover:text-brand-700" href="#">info@malmosquash.se</a></li>
+        <li><a class="hover:text-brand-700" href="#">+46 0406210430</a></li>
       </ul>
     </div>
     <div>
       <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Social media</h3>
-      <div class="mt-3 flex gap-3 text-xl">
-        <a href="#" aria-label="X" class="transition hover:scale-110">✖️</a>
-        <a href="#" aria-label="Facebook" class="transition hover:scale-110">📘</a>
-        <a href="#" aria-label="Instagram" class="transition hover:scale-110">📸</a>
+      <div class="mt-3 flex items-center gap-3">
+        <a
+          href="https://www.facebook.com/theclubmalmoe/"
+          target="_blank"
+          rel="noopener"
+          aria-label="Facebook"
+          class="transition hover:scale-110"
+        >
+          <img src="/facebook.png" alt="Facebook" class="h-7 w-7 rounded object-contain" />
+        </a>
+        <a
+          href="https://www.instagram.com/theclubmalmoe/?hl=en"
+          target="_blank"
+          rel="noopener"
+          aria-label="Instagram"
+          class="transition hover:scale-110"
+        >
+          <img src="/instagram.jpg" alt="Instagram" class="h-7 w-7 rounded object-contain" />
+        </a>
       </div>
       <p class="mt-4 text-xs text-slate-400">© {{ year }} Squash Club Malmö</p>
     </div>

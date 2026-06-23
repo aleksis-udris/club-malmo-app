@@ -21,8 +21,8 @@ const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
 <template>
   <div class="space-y-5">
     <div>
-      <h1 class="text-2xl font-extrabold text-slate-800">Club Sweden (SWE)</h1>
-      <p class="text-sm text-slate-400">Squad overview, group standings and overall statistics</p>
+      <h1 class="text-2xl font-extrabold text-slate-800">Tournament</h1>
+      <p class="text-sm text-slate-400">Season players and standings</p>
     </div>
 
     <StateBlock v-if="loading" type="loading" />
@@ -37,21 +37,35 @@ const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
 
     <template v-else-if="data">
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <StatCard label="Men in club" :value="data.counts.men" icon="👨" />
-        <StatCard label="Women in club" :value="data.counts.women" icon="👩" />
+        <StatCard label="Players" :value="data.counts.men + data.counts.women" icon="👥" />
+        <StatCard label="In standings" :value="data.groupStandings.length" icon="🏆" />
         <StatCard
-          label="Total players"
-          :value="data.counts.men + data.counts.women"
-          icon="👥"
+          label="Women's draw"
+          :value="data.counts.women"
+          icon="🎾"
           class="col-span-2 sm:col-span-1"
         />
       </div>
 
-      <SectionCard title="Group standings" subtitle="Sweden's qualification group">
-        <StandingsTable :rows="data.groupStandings" highlight="SWE" />
+      <SectionCard
+        v-if="data.groupStandings.length"
+        title="Season standings"
+        subtitle="Top 8 by results"
+      >
+        <StandingsTable :rows="data.groupStandings" />
       </SectionCard>
+      <StateBlock
+        v-else
+        type="empty"
+        message="No standings available for the current season yet."
+      />
 
-      <SectionCard title="Overall statistics" subtitle="Across 7 matches">
+      <!-- Only shown if the feed provides an aggregate stats breakdown -->
+      <SectionCard
+        v-if="data.overallStats.length"
+        title="Overall statistics"
+        subtitle="Aggregate"
+      >
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-sm">
             <thead>

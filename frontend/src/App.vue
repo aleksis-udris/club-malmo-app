@@ -15,7 +15,7 @@ const fullscreen = computed(() => route.meta.fullscreen === true)
   <div v-else class="min-h-screen bg-brand-50">
     <SideBar />
     <main class="min-h-screen">
-      <div class="mx-auto w-full max-w-6xl px-4 pb-8 pt-16 sm:px-6 lg:px-8">
+      <div class="mx-auto w-full max-w-[1600px] px-4 pb-8 pt-16 sm:px-6 lg:px-8">
         <RouterView v-slot="{ Component }">
           <Transition name="fade" mode="out-in">
             <component :is="Component" />

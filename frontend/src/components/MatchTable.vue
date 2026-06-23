@@ -29,13 +29,13 @@ const statusLabel: Record<Match['status'], string> = {
     <table class="w-full border-collapse text-sm">
       <thead>
         <tr class="text-left text-xs uppercase tracking-wider text-slate-400">
-          <th class="px-3 py-3 font-semibold">Time</th>
-          <th v-if="showDraw" class="px-3 py-3 font-semibold">Draw</th>
-          <th class="px-3 py-3 font-semibold">Home</th>
-          <th class="px-3 py-3 text-center font-semibold">Score</th>
-          <th class="px-3 py-3 font-semibold">Away</th>
-          <th class="px-3 py-3 font-semibold">Court</th>
-          <th class="px-3 py-3 text-right font-semibold">Status</th>
+          <th class="px-2.5 py-3 font-semibold">Time</th>
+          <th v-if="showDraw" class="px-2.5 py-3 font-semibold">Draw</th>
+          <th class="px-2.5 py-3 font-semibold">Team 1</th>
+          <th class="px-2.5 py-3 text-center font-semibold">Score</th>
+          <th class="px-2.5 py-3 font-semibold">Team 2</th>
+          <th class="px-2.5 py-3 font-semibold">Court</th>
+          <th class="px-2.5 py-3 text-right font-semibold">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -44,12 +44,12 @@ const statusLabel: Record<Match['status'], string> = {
           :key="match.id"
           class="border-t border-brand-50 transition hover:bg-brand-50/60"
         >
-          <td class="whitespace-nowrap px-3 py-3 font-semibold tabular-nums text-slate-600">
+          <td class="whitespace-nowrap px-2.5 py-3 font-semibold tabular-nums text-slate-600">
             {{ match.time }}
           </td>
-          <td v-if="showDraw" class="px-3 py-3 text-slate-500">{{ match.draw }}</td>
-          <td class="px-3 py-3"><CountryFlag :country="match.home" /></td>
-          <td class="px-3 py-3 text-center">
+          <td v-if="showDraw" class="px-2.5 py-3 text-slate-500">{{ match.draw }}</td>
+          <td class="px-2.5 py-3"><CountryFlag :country="match.home" /></td>
+          <td class="px-2.5 py-3 text-center">
             <span
               v-if="match.score"
               class="inline-block rounded-md bg-brand-50 px-2.5 py-1 font-extrabold tabular-nums text-brand-700"
@@ -57,9 +57,9 @@ const statusLabel: Record<Match['status'], string> = {
             >
             <span v-else class="text-slate-300">vs</span>
           </td>
-          <td class="px-3 py-3"><CountryFlag :country="match.away" /></td>
-          <td class="whitespace-nowrap px-3 py-3 text-slate-500">{{ match.court }}</td>
-          <td class="px-3 py-3 text-right">
+          <td class="px-2.5 py-3"><CountryFlag :country="match.away" /></td>
+          <td class="whitespace-nowrap px-2.5 py-3 text-slate-500">{{ match.court }}</td>
+          <td class="px-2.5 py-3 text-right">
             <span
               class="inline-block rounded-full px-2.5 py-1 text-xs font-bold"
               :class="statusStyle[match.status]"
