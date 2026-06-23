@@ -1,39 +1,45 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import * as data from './content.data'
+import { SportradarService } from '../sportradar/sportradar.service'
 
+/**
+ * Championship content endpoints. All data is sourced from the Sportradar v2
+ * read-models in the DB (no bundled/seed data). When Sportradar is disabled or
+ * nothing has been synced yet, these return empty — so the app shows only data
+ * that came from the API.
+ */
 @Injectable()
 export class ContentService {
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly sr: SportradarService,
+  ) {}
 
   meta() {
-    const sportradarEnabled = !!this.config.get('sportradar.enabled')
+    const enabled = !!this.config.get('sportradar.enabled')
     return {
-      championship: data.championship,
-      // Where the championship dataset currently comes from. Swap to 'sportradar'
-      // once a sync job populates these tables from the live feed.
-      source: sportradarEnabled ? 'sportradar' : 'seed',
-      sportradarEnabled,
+      // App identity (branding, not match data).
+      championship: {
+        title: 'ESF Squash Championship',
+        year: new Date().getFullYear(),
+        host: 'Squash Club Malmö',
+      },
+      source: enabled ? 'sportradar' : 'empty',
+      sportradarEnabled: enabled,
       servedAt: new Date().toISOString(),
     }
   }
 
   matchDays() {
-    return data.matchDays
+    return this.sr.getMatchDays()
   }
   standings(bracket: 'top' | 'bottom') {
-    return bracket === 'bottom' ? data.standingsBottom : data.standingsTop
+    return this.sr.getStandings(bracket)
   }
   latest(bracket: 'top' | 'bottom') {
-    return bracket === 'bottom' ? data.latestBottom : data.latestTop
+    return this.sr.getLatest(bracket)
   }
   sweden() {
-    return {
-      groupStandings: data.swedenGroupStandings,
-      overallStats: data.swedenOverallStats,
-      men: data.swedenMen,
-      women: data.swedenWomen,
-      counts: { men: data.swedenMen.length, women: data.swedenWomen.length },
-    }
+    return this.sr.getSweden()
   }
 }

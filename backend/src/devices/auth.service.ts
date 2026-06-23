@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
+import { JwtService, JwtSignOptions } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { Device } from './device.entity'
 
@@ -12,13 +12,16 @@ export class AuthService {
 
   /** Issue a short-lived session JWT bound to the device + role + class. */
   async issueSession(device: Device): Promise<{ token: string; expiresIn: string; role: string }> {
+    const expiresIn = this.config.get<string>('jwtExpires') ?? '15m'
+    const options = {
+      secret: this.config.get<string>('jwtSecret'),
+      // jsonwebtoken accepts a string like "15m"; cast for its strict StringValue type.
+      expiresIn,
+    } as JwtSignOptions
     const token = await this.jwt.signAsync(
       { sub: device.id, role: device.role, cls: device.deviceClass },
-      {
-        secret: this.config.get<string>('jwtSecret'),
-        expiresIn: this.config.get<string>('jwtExpires'),
-      },
+      options,
     )
-    return { token, expiresIn: this.config.get<string>('jwtExpires')!, role: device.role }
+    return { token, expiresIn, role: device.role }
   }
 }

@@ -11,8 +11,8 @@ export interface FetchResult<T> {
 }
 
 /**
- * Wraps every Sportradar call with the cost & resilience controls from the spec:
- * token-bucket rate limiting, conditional ETag requests (304 = cheap/no write),
+ * Wraps every Sportradar (Squash v2) call with the spec's cost & resilience
+ * controls: token-bucket rate limiting, conditional ETag requests (304 = cheap),
  * single-flight coalescing, retry+backoff, and a circuit breaker. Returns last-good
  * cached data when the breaker is open or the integration is disabled.
  */
@@ -56,8 +56,13 @@ export class SportradarClient {
       for (let attempt = 0; attempt < 4; attempt++) {
         try {
           const res = await this.http.get<T>(path, {
+            // v2 auth: x-api-key header (preferred) + api_key query (trial-friendly).
             params: { api_key: apiKey },
-            headers: etag ? { 'If-None-Match': etag } : {},
+            headers: {
+              'x-api-key': apiKey,
+              accept: 'application/json',
+              ...(etag ? { 'If-None-Match': etag } : {}),
+            },
             validateStatus: (s) => s === 200 || s === 304,
           })
           this.failures = 0
@@ -85,7 +90,6 @@ export class SportradarClient {
         }
       }
 
-      // Exhausted retries -> trip breaker, serve last-good cache.
       if (++this.failures >= 5) {
         this.breakerOpenUntil = Date.now() + 30_000
         this.log.warn('Sportradar circuit breaker OPEN for 30s')

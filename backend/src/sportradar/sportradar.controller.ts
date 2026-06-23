@@ -18,7 +18,7 @@ export class SportradarController {
 
   @Get('schedule')
   schedule() {
-    return this.sr.getSchedule()
+    return this.sr.getMatchDays()
   }
 
   @Get('rankings')

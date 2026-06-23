@@ -178,3 +178,46 @@ The app boots fine with zero external services (SQLite + in-memory cache + Sport
   `/content/*` endpoints return correct shapes (incl. country flags).
 - Everything committed to files in the user's folder. `node_modules` for backend is intentionally
   absent (install locally per gotcha #1).
+
+---
+
+## 9. Update (Sportradar v2 + no-seed) — latest session
+
+- **Sportradar is now v2 end-to-end.** `SPORTRADAR_BASE_URL=https://api.sportradar.com/squash/trial/v2/en`,
+  client sends `x-api-key` header + `api_key` query. Endpoints used (General Sport API v2):
+  `/schedules/{date}/summaries.json`, `/schedules/live/summaries.json`,
+  `/seasons/{seasonId}/standings.json`, `/seasons/{seasonId}/competitors.json`,
+  `/sport_events/{id}/summary.json`, `/rankings.json`.
+  New env: `SPORTRADAR_SEASON_ID`, `SPORTRADAR_COMPETITION_ID` (standings/players need a season).
+- **All seed/mock data deleted.** `backend/src/content/content.data.ts` is gone. `ContentService`
+  now delegates to `SportradarService` read-models (entities: SrEvent, SrRanking, SrStanding,
+  SrCompetitor). `/content/*` returns **only data synced from the API** — empty without a key.
+  `/content/meta.source` = `'sportradar'` (enabled) or `'empty'`.
+- **Frontend** unchanged in wiring (already API-driven). `DataSourceBadge` now shows
+  `Live · Sportradar v2` / `API · no data (add key)` / `API offline`.
+- **Verified:** backend `tsc` exit 0; 18/18 device-pairing smoke pass; `/content/*` return empty
+  (count 0) keyless with `source=empty`, `/sportradar/status` reports `version v2`. Frontend build +
+  oxlint + eslint clean.
+- **To get real data:** set `SPORTRADAR_API_KEY`, `SPORTRADAR_ENABLED=true`, `SPORTRADAR_SEASON_ID`
+  in `backend/.env`, then the sync scheduler populates the read-models and the views fill in.
+- **Caveat:** Sportradar Squash v2 covers pro/PSA squash, not the ESF U15/U17 youth championship,
+  and the season-competitor → "Sweden men/women" + 8/8 bracket mapping is best-effort. Verify field
+  paths against your actual plan's JSON (`sportradar.service.ts` upsert/mapper methods).
+- **Still pending:** wiring courts/TV/controller (`src/pairing/courtHub.ts`) to the backend
+  pairing/scoring endpoints + Socket.IO (currently still the in-browser simulation).
+
+---
+
+## 10. Update — monorepo restructure (latest)
+
+Project is now split into sibling folders:
+
+- `frontend/` — everything that used to be at repo root (Vue app: `src/`, `package.json`,
+  `vite.config.ts`, `index.html`, tsconfig/eslint configs, `.env`). Build/lint from here:
+  `cd frontend && npm install && npm run build` (oxlint/eslint as before). The `@` alias still
+  points to `frontend/src`.
+- `backend/` — unchanged (NestJS API).
+- Root keeps `docs/`, `README.md` (new monorepo overview), `README_DATA.md`, `HANDOFF.md`, `.git`.
+
+Note: `node_modules` is **not** committed in either folder (gitignored). Run `npm install` in
+each folder. Earlier handoff paths that said `src/...` are now `frontend/src/...`.

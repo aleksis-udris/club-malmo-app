@@ -12,6 +12,8 @@ export interface AppConfig {
     baseUrl: string
     enabled: boolean
     qps: number
+    seasonId: string
+    competitionId: string
   }
 }
 
@@ -26,10 +28,12 @@ export default (): AppConfig => ({
   redisUrl: process.env.REDIS_URL,
   sportradar: {
     apiKey: process.env.SPORTRADAR_API_KEY ?? '',
-    baseUrl: process.env.SPORTRADAR_BASE_URL ?? 'https://api.sportradar.com/squash/trial/v1/en',
+    baseUrl: process.env.SPORTRADAR_BASE_URL ?? 'https://api.sportradar.com/squash/trial/v2/en',
     enabled:
       (process.env.SPORTRADAR_ENABLED ?? 'false') === 'true' &&
       !!(process.env.SPORTRADAR_API_KEY ?? ''),
     qps: parseInt(process.env.SPORTRADAR_QPS ?? '1', 10),
+    seasonId: process.env.SPORTRADAR_SEASON_ID ?? '',
+    competitionId: process.env.SPORTRADAR_COMPETITION_ID ?? '',
   },
 })

@@ -24,9 +24,16 @@ export class SyncScheduler {
     await this.sr.syncSchedule()
   }
 
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async standings() {
+    if (!this.sr.enabled) return
+    await this.sr.syncStandings()
+  }
+
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async rankings() {
     if (!this.sr.enabled) return
+    await this.sr.syncCompetitors()
     await this.sr.syncRankings('men')
     await this.sr.syncRankings('women')
   }

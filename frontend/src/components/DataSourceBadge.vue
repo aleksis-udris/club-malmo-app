@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useApi } from '@/composables/useApi'
 
 interface Meta {
-  source: 'seed' | 'sportradar'
+  source: 'sportradar' | 'empty'
   sportradarEnabled: boolean
 }
 
@@ -13,8 +13,8 @@ const state = computed(() => {
   if (loading.value) return { label: 'Connecting…', cls: 'bg-slate-100 text-slate-500', dot: 'bg-slate-400' }
   if (error.value) return { label: 'API offline', cls: 'bg-rose-100 text-rose-700', dot: 'bg-rose-500' }
   if (data.value?.source === 'sportradar')
-    return { label: 'Live · Sportradar', cls: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' }
-  return { label: 'Seed data · API', cls: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
+    return { label: 'Live · Sportradar v2', cls: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' }
+  return { label: 'API · no data (add key)', cls: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
 })
 </script>
 
