@@ -10,16 +10,23 @@ import type { Player } from '@/types'
 interface SwedenData {
   men: Player[]
   women: Player[]
+  sweden: Player[]
+  countries?: Record<string, number>
 }
 
 const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
 
-const squads = computed(() => {
+// Sweden-only table (computed by the backend) goes first; then full lists.
+const sections = computed(() => {
   if (!data.value) return []
-  return [
+  const base = [
     { key: 'men', label: 'Players', players: data.value.men },
     { key: 'women', label: "Women's draw", players: data.value.women },
   ].filter((s) => s.players.length)
+  const swe = data.value.sweden?.length
+    ? [{ key: 'sweden', label: '🇸🇪 Sweden players', players: data.value.sweden }]
+    : []
+  return [...swe, ...base]
 })
 
 const initials = (name: string) =>
@@ -54,17 +61,17 @@ const sexLabel = (g?: string | null) =>
     </StateBlock>
 
     <StateBlock
-      v-else-if="!squads.length"
+      v-else-if="!sections.length"
       type="empty"
       message="No players have been synced yet for the current season."
     />
 
     <div v-else class="space-y-6">
       <SectionCard
-        v-for="squad in squads"
-        :key="squad.key"
-        :title="squad.label"
-        :subtitle="`${squad.players.length} players`"
+        v-for="section in sections"
+        :key="section.key"
+        :title="section.label"
+        :subtitle="`${section.players.length} players`"
       >
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-sm">
@@ -83,7 +90,7 @@ const sexLabel = (g?: string | null) =>
             </thead>
             <tbody>
               <tr
-                v-for="(player, i) in (squad.players as Player[])"
+                v-for="(player, i) in (section.players as Player[])"
                 :key="player.id"
                 class="border-t border-brand-50 transition hover:bg-brand-50/60"
               >

@@ -32,7 +32,7 @@ const squad = computed(() =>
 const quickLinks = [
   { to: '/matches', icon: '🗓️', label: 'Match overview', desc: 'Browse matches by date' },
   { to: '/standings', icon: '🏆', label: 'Standings 1–8', desc: 'ESF championship table' },
-  { to: '/latest', icon: '📋', label: 'Latest 9–16', desc: 'Lower-bracket results' },
+  { to: '/calendar', icon: '📅', label: 'Calendar', desc: 'All squash events' },
   { to: '/sweden', icon: '🏆', label: 'Tournament', desc: 'Players & standings' },
   { to: '/players', icon: '👥', label: 'Players', desc: 'Men & women squads' },
   { to: '/courts', icon: '🟩', label: 'Courts', desc: 'TV pairing & live status' },

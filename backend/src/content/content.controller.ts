@@ -30,4 +30,9 @@ export class ContentController {
   sweden() {
     return this.content.sweden()
   }
+
+  @Get('calendar')
+  calendar() {
+    return this.content.calendar()
+  }
 }

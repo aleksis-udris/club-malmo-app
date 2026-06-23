@@ -42,4 +42,8 @@ export class ContentService {
   sweden() {
     return this.sr.getSweden()
   }
+
+  calendar() {
+    return this.sr.getCalendar()
+  }
 }

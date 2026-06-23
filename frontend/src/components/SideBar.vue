@@ -15,7 +15,7 @@ const groups: { heading: string; items: NavItem[] }[] = [
       { to: '/', label: 'Home', icon: '🏠' },
       { to: '/matches', label: 'Matches', icon: '🗓️' },
       { to: '/standings', label: 'Standings (1–8)', icon: '🏆' },
-      { to: '/latest', label: 'Latest (9–16)', icon: '📋' },
+      { to: '/calendar', label: 'Calendar', icon: '📅' },
     ],
   },
   {
