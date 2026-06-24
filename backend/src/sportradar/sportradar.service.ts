@@ -10,58 +10,55 @@ import { SrCompetitor } from './entities/sr-competitor.entity'
 import { SrCalendarEvent } from './entities/sr-calendar.entity'
 
 function ymd(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  return d.toISOString().slice(0, 10);
 }
 
 // 3-letter (IOC/FIFA, as Sportradar uses) -> ISO-2 for flag emoji. Broad coverage;
 // anything not here renders as the country code initials instead of a blank flag.
 const A3: Record<string, string> = {
-  SWE: 'SE', ENG: 'GB', GBR: 'GB', WAL: 'GB', SCO: 'GB', NIR: 'GB', GER: 'DE',
-  DEU: 'DE', FRA: 'FR', ESP: 'ES', NED: 'NL', NLD: 'NL', SUI: 'CH', CHE: 'CH',
-  BEL: 'BE', ITA: 'IT', AUT: 'AT', FIN: 'FI', NOR: 'NO', DEN: 'DK', DNK: 'DK',
-  POL: 'PL', IRL: 'IE', CZE: 'CZ', SVK: 'SK', POR: 'PT', PRT: 'PT', GRE: 'GR',
-  GRC: 'GR', HUN: 'HU', RUS: 'RU', UKR: 'UA', TUR: 'TR', ISR: 'IL', LUX: 'LU',
-  EGY: 'EG', RSA: 'ZA', ZAF: 'ZA', NGR: 'NG', NGA: 'NG', KEN: 'KE', MAR: 'MA',
-  USA: 'US', CAN: 'CA', MEX: 'MX', BRA: 'BR', ARG: 'AR', COL: 'CO', PER: 'PE',
-  CHI: 'CL', CHL: 'CL', ECU: 'EC', GUY: 'GY', CRC: 'CR', IND: 'IN', PAK: 'PK',
-  MAS: 'MY', MYS: 'MY', HKG: 'HK', JPN: 'JP', KOR: 'KR', CHN: 'CN', SGP: 'SG',
-  QAT: 'QA', KUW: 'KW', UAE: 'AE', KSA: 'SA', SAU: 'SA', IRN: 'IR', JOR: 'JO',
-  NZL: 'NZ', AUS: 'AU', WLS: 'GB',
-}
+  SWE: "SE",
+  ENG: "GB",
+  GBR: "GB",
+  GER: "DE",
+  DEU: "DE",
+  FRA: "FR",
+  ESP: "ES",
+  NED: "NL",
+  NLD: "NL",
+  SUI: "CH",
+  CHE: "CH",
+  BEL: "BE",
+  ITA: "IT",
+  AUT: "AT",
+  WAL: "GB",
+  SCO: "GB",
+  FIN: "FI",
+  NOR: "NO",
+  DEN: "DK",
+  DNK: "DK",
+  POL: "PL",
+  EGY: "EG",
+  USA: "US",
+  IND: "IN",
+  MAS: "MY",
+  HKG: "HK",
+  QAT: "QA",
+  NZL: "NZ",
+};
 function flag(code?: string | null): string {
-  if (!code) return ''
-  let cc = code.toUpperCase()
-  if (cc.length === 3) cc = A3[cc] ?? ''
-  if (cc.length !== 2) return '' // unknown -> caller shows the code initials instead
-  return String.fromCodePoint(...[...cc].map((ch) => 0x1f1e6 + (ch.charCodeAt(0) - 65)))
+  if (!code) return "🏳️";
+  let cc = code.toUpperCase();
+  if (cc.length === 3) cc = A3[cc] ?? "";
+  if (cc.length !== 2) return "🏳️";
+  return String.fromCodePoint(
+    ...[...cc].map((ch) => 0x1f1e6 + (ch.charCodeAt(0) - 65)),
+  );
 }
-const country = (name: string, code?: string | null) => {
-  const cc = (code ?? '').toUpperCase()
-  return {
-    code: cc || name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() || '—',
-    name,
-    flag: flag(cc),
-  }
-}
-
-// Surfacing priority: Sweden/Malmö first (2), then nearby Nordic + Baltic
-// neighbours (1), then everything else (0).
-const NEAR_SWEDEN = new Set([
-  'SE', 'SWE', 'DK', 'DEN', 'DNK', 'NO', 'NOR', 'FI', 'FIN', 'IS', 'ISL',
-  'DE', 'GER', 'DEU', 'PL', 'POL', 'NL', 'NED', 'NLD', 'EE', 'EST',
-  'LV', 'LAT', 'LVA', 'LT', 'LTU',
-])
-function regionPriority(code?: string | null, text?: string): number {
-  const cc = (code ?? '').toUpperCase()
-  const t = (text ?? '').toLowerCase()
-  if (cc === 'SE' || cc === 'SWE' || /sweden|malm|stockholm|gothenburg|g[oö]teborg/.test(t)) return 2
-  if (
-    NEAR_SWEDEN.has(cc) ||
-    /denmark|copenhagen|norway|oslo|finland|helsinki|iceland|nordic|scandinav|baltic/.test(t)
-  )
-    return 1
-  return 0
-}
+const country = (name: string, code?: string | null) => ({
+  code: (code ?? name.slice(0, 3)).toUpperCase(),
+  name,
+  flag: flag(code),
+});
 
 /**
  * Sportradar Squash **v2** integration. Syncs schedules, live summaries, season
@@ -71,7 +68,7 @@ function regionPriority(code?: string | null, text?: string): number {
  */
 @Injectable()
 export class SportradarService {
-  private readonly log = new Logger('SportradarService')
+  private readonly log = new Logger("SportradarService");
 
   constructor(
     private readonly client: SportradarClient,
@@ -84,7 +81,7 @@ export class SportradarService {
   ) {}
 
   get enabled(): boolean {
-    return !!this.config.get('sportradar.enabled')
+    return !!this.config.get("sportradar.enabled");
   }
   private cachedSeasonId: string | null = null
   private seasonsCache: any[] | null = null
@@ -176,7 +173,7 @@ export class SportradarService {
   /* ---- Sync (writes) — v2 endpoints --------------------------------- */
 
   async syncSchedule(): Promise<number> {
-    let n = 0
+    let n = 0;
     for (let i = 0; i < 4; i++) {
       const d = new Date()
       d.setDate(d.getDate() - i)
@@ -226,23 +223,23 @@ export class SportradarService {
   }
 
   private async upsertEvent(s: any): Promise<boolean> {
-    const ev = s.sport_event ?? s
-    if (!ev?.id) return false
-    const comp = ev.competitors ?? []
-    const st = s.sport_event_status ?? {}
+    const ev = s.sport_event ?? s;
+    if (!ev?.id) return false;
+    const comp = ev.competitors ?? [];
+    const st = s.sport_event_status ?? {};
     await this.events.save(
       this.events.create({
         id: ev.id,
-        status: st.status ?? ev.status ?? 'not_started',
+        status: st.status ?? ev.status ?? "not_started",
         scheduled: ev.start_time ? new Date(ev.start_time) : null,
         tournamentId: ev.sport_event_context?.competition?.id ?? null,
         homeName: comp?.[0]?.name ?? null,
         awayName: comp?.[1]?.name ?? null,
-        isHistorical: (st.status ?? '') === 'closed',
+        isHistorical: (st.status ?? "") === "closed",
         payload: s,
       }),
-    )
-    return true
+    );
+    return true;
   }
 
   async syncStandings(): Promise<number> {
@@ -401,14 +398,14 @@ export class SportradarService {
           rankingType: type,
           week,
           playerId: r.competitor?.id ?? String(r.rank),
-          playerName: r.competitor?.name ?? 'Unknown',
+          playerName: r.competitor?.name ?? "Unknown",
           rank: r.rank,
           points: r.points ?? 0,
         }),
-      )
-      n++
+      );
+      n++;
     }
-    return n
+    return n;
   }
 
   /**
@@ -449,11 +446,18 @@ export class SportradarService {
   /* ---- Read models shaped for the frontend (no origin calls) -------- */
 
   private toMatch(e: SrEvent) {
-    const st = (e.payload as any)?.sport_event_status ?? {}
-    const comp = (e.payload as any)?.sport_event?.competitors ?? []
-    const status = e.status === 'closed' ? 'finished' : e.status === 'live' ? 'live' : 'upcoming'
+    const st = (e.payload as any)?.sport_event_status ?? {};
+    const comp = (e.payload as any)?.sport_event?.competitors ?? [];
+    const status =
+      e.status === "closed"
+        ? "finished"
+        : e.status === "live"
+          ? "live"
+          : "upcoming";
     const score =
-      st.home_score != null && st.away_score != null ? `${st.home_score}-${st.away_score}` : ''
+      st.home_score != null && st.away_score != null
+        ? `${st.home_score}-${st.away_score}`
+        : "";
     return {
       id: e.id,
       time: e.scheduled ? new Date(e.scheduled).toISOString().slice(11, 16) : '',
@@ -461,9 +465,9 @@ export class SportradarService {
       home: country(e.homeName ?? comp?.[0]?.name ?? 'Team 1', comp?.[0]?.country_code),
       away: country(e.awayName ?? comp?.[1]?.name ?? 'Team 2', comp?.[1]?.country_code),
       score,
-      court: (e.payload as any)?.sport_event?.venue?.name ?? '',
+      court: (e.payload as any)?.sport_event?.venue?.name ?? "",
       status,
-    }
+    };
   }
 
   /**
@@ -526,10 +530,10 @@ export class SportradarService {
       won: s.won,
       draws: 0,
       lost: s.lost,
-      rubbers: '',
-      games: '',
+      rubbers: "",
+      games: "",
       points: s.points,
-    }
+    };
   }
 
   /**
@@ -756,22 +760,31 @@ export class SportradarService {
   }
 
   getLive() {
-    return this.events.find({ where: { status: 'live' } })
+    return this.events.find({ where: { status: "live" } });
   }
   getRankings(type: string) {
-    return this.rankings.find({ where: { rankingType: type }, order: { rank: 'ASC' }, take: 50 })
+    return this.rankings.find({
+      where: { rankingType: type },
+      order: { rank: "ASC" },
+      take: 50,
+    });
   }
 
   status() {
     return {
       enabled: this.enabled,
-      version: 'v2',
-      baseUrl: this.config.get('sportradar.baseUrl'),
-      seasonConfigured: !!(this.config.get<string>('sportradar.seasonId') ?? ''),
-      seasonMode: (this.config.get<string>('sportradar.seasonId') ?? '') ? 'fixed' : 'auto-detect current',
+      version: "v2",
+      baseUrl: this.config.get("sportradar.baseUrl"),
+      seasonConfigured: !!(
+        this.config.get<string>("sportradar.seasonId") ?? ""
+      ),
+      seasonMode:
+        (this.config.get<string>("sportradar.seasonId") ?? "")
+          ? "fixed"
+          : "auto-detect current",
       note: this.enabled
-        ? 'Sportradar v2 sync active.'
-        : 'Sportradar disabled — set SPORTRADAR_API_KEY + SPORTRADAR_ENABLED=true. The current season is auto-detected (override with SPORTRADAR_SEASON_ID). Read models serve only data already synced from the API.',
-    }
+        ? "Sportradar v2 sync active."
+        : "Sportradar disabled — set SPORTRADAR_API_KEY + SPORTRADAR_ENABLED=true. The current season is auto-detected (override with SPORTRADAR_SEASON_ID). Read models serve only data already synced from the API.",
+    };
   }
 }

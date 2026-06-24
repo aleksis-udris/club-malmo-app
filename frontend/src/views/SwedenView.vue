@@ -7,6 +7,10 @@ import AppFooter from '@/components/AppFooter.vue'
 import { useApi } from '@/composables/useApi'
 import type { OverallStatRow, Player, StandingRow } from '@/types'
 
+const iconMan = '<span class="icon" aria-hidden="true">man</span>'
+const iconWoman = '<span class="icon" aria-hidden="true">woman</span>'
+const iconGroup = '<span class="icon" aria-hidden="true">group</span>'
+
 interface SwedenData {
   groupStandings: StandingRow[]
   overallStats: OverallStatRow[]
@@ -21,14 +25,14 @@ const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
 <template>
   <div class="space-y-5">
     <div>
-      <h1 class="text-2xl font-extrabold text-slate-800">Tournament</h1>
-      <p class="text-sm text-slate-400">Season players and standings</p>
+      <h1 class="text-2xl font-extrabold text-on-surface">Club Sweden (SWE)</h1>
+      <p class="text-sm text-outline">Squad overview, group standings and overall statistics</p>
     </div>
 
     <StateBlock v-if="loading" type="loading" />
     <StateBlock v-else-if="error" type="error" :message="error">
       <button
-        class="mt-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+        class="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
         @click="retry"
       >
         Retry
@@ -37,12 +41,12 @@ const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
 
     <template v-else-if="data">
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <StatCard label="Players" :value="data.counts.men + data.counts.women" icon="👥" />
-        <StatCard label="In standings" :value="data.groupStandings.length" icon="🏆" />
+        <StatCard label="Men in club" :value="data.counts.men" :icon="iconMan" />
+        <StatCard label="Women in club" :value="data.counts.women" :icon="iconWoman" />
         <StatCard
-          label="Women's draw"
-          :value="data.counts.women"
-          icon="🎾"
+          label="Total players"
+          :value="data.counts.men + data.counts.women"
+          :icon="iconGroup"
           class="col-span-2 sm:col-span-1"
         />
       </div>
@@ -69,7 +73,7 @@ const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-sm">
             <thead>
-              <tr class="text-left text-xs uppercase tracking-wider text-slate-400">
+              <tr class="text-left text-xs uppercase tracking-wider text-outline">
                 <th class="px-3 py-3 font-semibold">Type</th>
                 <th class="px-3 py-3 text-center font-semibold">Played</th>
                 <th class="px-3 py-3 text-center font-semibold">Rubbers</th>
@@ -82,15 +86,15 @@ const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
               <tr
                 v-for="row in data.overallStats"
                 :key="row.type"
-                class="border-t border-brand-50 transition hover:bg-brand-50/60"
-                :class="row.type === 'Total' ? 'bg-brand-50/60 font-bold' : ''"
+                class="border-t border-primary-container transition hover:bg-primary-container/60"
+                :class="row.type === 'Total' ? 'bg-primary-container/60 font-bold' : ''"
               >
-                <td class="px-3 py-3 font-semibold text-slate-700">{{ row.type }}</td>
-                <td class="px-3 py-3 text-center text-slate-500">{{ row.played }}</td>
-                <td class="px-3 py-3 text-center tabular-nums text-slate-600">{{ row.rubbers }}</td>
-                <td class="px-3 py-3 text-center tabular-nums text-slate-600">{{ row.games }}</td>
-                <td class="px-3 py-3 text-center font-extrabold text-brand-700">{{ row.points }}</td>
-                <td class="px-3 py-3 text-center text-slate-500">{{ row.walkovers }}</td>
+                <td class="px-3 py-3 font-semibold text-on-surface">{{ row.type }}</td>
+                <td class="px-3 py-3 text-center text-on-surface-variant">{{ row.played }}</td>
+                <td class="px-3 py-3 text-center tabular-nums text-on-surface-variant">{{ row.rubbers }}</td>
+                <td class="px-3 py-3 text-center tabular-nums text-on-surface-variant">{{ row.games }}</td>
+                <td class="px-3 py-3 text-center font-extrabold text-primary">{{ row.points }}</td>
+                <td class="px-3 py-3 text-center text-on-surface-variant">{{ row.walkovers }}</td>
               </tr>
             </tbody>
           </table>

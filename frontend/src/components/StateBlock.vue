@@ -13,20 +13,23 @@ withDefaults(
 )
 
 const defaults = {
-  loading: { icon: '⏳', title: 'Loading…', message: 'Fetching the latest data.' },
-  empty: { icon: '📭', title: 'Nothing here yet', message: 'There is no data to display.' },
-  error: { icon: '⚠️', title: 'Something went wrong', message: 'Unable to load this data.' },
+  loading: { icon: '<span class="icon" aria-hidden="true">hourglass_empty</span>', title: 'Loading…', message: 'Fetching the latest data.' },
+  empty: { icon: '<span class="icon" aria-hidden="true">inbox</span>', title: 'Nothing here yet', message: 'There is no data to display.' },
+  error: { icon: '<span class="icon" aria-hidden="true">warning</span>', title: 'Something went wrong', message: 'Unable to load this data.' },
 }
 </script>
 
 <template>
   <div
-    class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-brand-200 bg-white/60 px-6 py-14 text-center"
+    class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-primary-container bg-surface-container-lowest/60 px-6 py-14 text-center"
   >
-    <span v-if="type === 'loading'" class="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-    <span v-else class="text-4xl">{{ defaults[type].icon }}</span>
-    <p class="text-base font-bold text-slate-700">{{ title || defaults[type].title }}</p>
-    <p class="max-w-sm text-sm text-slate-500">{{ message || defaults[type].message }}</p>
+    <span
+      v-if="type === 'loading'"
+      class="h-10 w-10 animate-spin rounded-full border-4 border-primary-container border-t-primary"
+    />
+    <span v-else class="text-4xl" v-html="defaults[type].icon" />
+    <p class="text-base font-bold text-on-surface">{{ title || defaults[type].title }}</p>
+    <p class="max-w-sm text-sm text-on-surface-variant">{{ message || defaults[type].message }}</p>
     <slot />
   </div>
 </template>
