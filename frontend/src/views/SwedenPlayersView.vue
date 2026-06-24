@@ -39,8 +39,7 @@ const initials = (name: string) =>
     .slice(0, 2)
     .toUpperCase()
 
-const sexLabel = (g?: string | null) =>
-  g ? (g.toLowerCase() === 'female' ? 'Women' : 'Men') : ''
+const sexLabel = (g?: string | null) => (g ? (g.toLowerCase() === 'female' ? 'Women' : 'Men') : '')
 </script>
 
 <template>
@@ -68,17 +67,14 @@ const sexLabel = (g?: string | null) =>
 
     <div v-else class="space-y-6">
       <SectionCard
-        v-for="squad in [
-          { key: 'men', label: 'Men', icon: '<span class="icon" aria-hidden="true">man</span>', players: data.men },
-          { key: 'women', label: 'Women', icon: '<span class="icon" aria-hidden="true">woman</span>', players: data.women },
-        ]"
+        v-for="squad in sections"
         :key="squad.key"
         :title="squad.label"
         :subtitle="`${squad.players.length} players`"
       >
         <ul v-if="squad.players.length" class="divide-y divide-primary-container">
           <li
-            v-for="(player, i) in squad.players as Player[]"
+            v-for="(player, i) in squad.players"
             :key="player.id"
             class="flex items-center gap-3 px-3 py-3 transition hover:bg-primary-container/60"
           >
