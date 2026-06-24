@@ -17,6 +17,9 @@ export class SrEvent {
   tournamentId: string | null
 
   @Column({ type: 'varchar', nullable: true })
+  seasonId: string | null
+
+  @Column({ type: 'varchar', nullable: true })
   homeName: string | null
 
   @Column({ type: 'varchar', nullable: true })

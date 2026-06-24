@@ -5,6 +5,7 @@ import StandingsTable from '@/components/StandingsTable.vue'
 import StateBlock from '@/components/StateBlock.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import { useApi } from '@/composables/useApi'
+import { useSeason } from '@/composables/useSeason'
 import type { OverallStatRow, Player, StandingRow } from '@/types'
 
 interface SwedenData {
@@ -15,7 +16,8 @@ interface SwedenData {
   counts: { men: number; women: number }
 }
 
-const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
+const { withSeason } = useSeason()
+const { data, loading, error, retry } = useApi<SwedenData>(() => withSeason('/content/sweden'))
 </script>
 
 <template>

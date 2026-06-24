@@ -6,10 +6,12 @@ import MatchTable from '@/components/MatchTable.vue'
 import StateBlock from '@/components/StateBlock.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import { useApi } from '@/composables/useApi'
+import { useSeason } from '@/composables/useSeason'
 import type { Match, StandingRow } from '@/types'
 
-const standings = useApi<StandingRow[]>('/content/standings?bracket=top')
-const latest = useApi<Match[]>('/content/latest?bracket=top')
+const { withSeason } = useSeason()
+const standings = useApi<StandingRow[]>(() => withSeason('/content/standings?bracket=top'))
+const latest = useApi<Match[]>(() => withSeason('/content/latest?bracket=top'))
 
 const loading = computed(() => standings.loading.value || latest.loading.value)
 const error = computed(() => standings.error.value || latest.error.value)

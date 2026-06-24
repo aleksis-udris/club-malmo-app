@@ -16,17 +16,39 @@ function ymd(d: Date): string {
 // 3-letter (IOC/FIFA, as Sportradar uses) -> ISO-2 for flag emoji. Broad coverage;
 // anything not here renders as the country code initials instead of a blank flag.
 const A3: Record<string, string> = {
-  SWE: 'SE', ENG: 'GB', GBR: 'GB', WAL: 'GB', SCO: 'GB', NIR: 'GB', GER: 'DE',
-  DEU: 'DE', FRA: 'FR', ESP: 'ES', NED: 'NL', NLD: 'NL', SUI: 'CH', CHE: 'CH',
-  BEL: 'BE', ITA: 'IT', AUT: 'AT', FIN: 'FI', NOR: 'NO', DEN: 'DK', DNK: 'DK',
-  POL: 'PL', IRL: 'IE', CZE: 'CZ', SVK: 'SK', POR: 'PT', PRT: 'PT', GRE: 'GR',
-  GRC: 'GR', HUN: 'HU', RUS: 'RU', UKR: 'UA', TUR: 'TR', ISR: 'IL', LUX: 'LU',
-  EGY: 'EG', RSA: 'ZA', ZAF: 'ZA', NGR: 'NG', NGA: 'NG', KEN: 'KE', MAR: 'MA',
-  USA: 'US', CAN: 'CA', MEX: 'MX', BRA: 'BR', ARG: 'AR', COL: 'CO', PER: 'PE',
-  CHI: 'CL', CHL: 'CL', ECU: 'EC', GUY: 'GY', CRC: 'CR', IND: 'IN', PAK: 'PK',
-  MAS: 'MY', MYS: 'MY', HKG: 'HK', JPN: 'JP', KOR: 'KR', CHN: 'CN', SGP: 'SG',
-  QAT: 'QA', KUW: 'KW', UAE: 'AE', KSA: 'SA', SAU: 'SA', IRN: 'IR', JOR: 'JO',
-  NZL: 'NZ', AUS: 'AU', WLS: 'GB',
+  // ISO 3166-1 alpha-3 -> alpha-2 (full set)
+  AFG: 'AF', ALB: 'AL', DZA: 'DZ', AND: 'AD', AGO: 'AO', ATG: 'AG', ARG: 'AR',
+  ARM: 'AM', AUS: 'AU', AUT: 'AT', AZE: 'AZ', BHS: 'BS', BHR: 'BH', BGD: 'BD',
+  BRB: 'BB', BLR: 'BY', BEL: 'BE', BLZ: 'BZ', BEN: 'BJ', BTN: 'BT', BOL: 'BO',
+  BIH: 'BA', BWA: 'BW', BRA: 'BR', BRN: 'BN', BGR: 'BG', BFA: 'BF', BDI: 'BI',
+  CPV: 'CV', KHM: 'KH', CMR: 'CM', CAN: 'CA', CAF: 'CF', TCD: 'TD', CHL: 'CL',
+  CHN: 'CN', COL: 'CO', COM: 'KM', COG: 'CG', COD: 'CD', CRI: 'CR', CIV: 'CI',
+  HRV: 'HR', CUB: 'CU', CYP: 'CY', CZE: 'CZ', DNK: 'DK', DJI: 'DJ', DMA: 'DM',
+  DOM: 'DO', ECU: 'EC', EGY: 'EG', SLV: 'SV', GNQ: 'GQ', ERI: 'ER', EST: 'EE',
+  SWZ: 'SZ', ETH: 'ET', FJI: 'FJ', FIN: 'FI', FRA: 'FR', GAB: 'GA', GMB: 'GM',
+  GEO: 'GE', DEU: 'DE', GHA: 'GH', GRC: 'GR', GRD: 'GD', GTM: 'GT', GIN: 'GN',
+  GNB: 'GW', GUY: 'GY', HTI: 'HT', HND: 'HN', HUN: 'HU', ISL: 'IS', IND: 'IN',
+  IDN: 'ID', IRN: 'IR', IRQ: 'IQ', IRL: 'IE', ISR: 'IL', ITA: 'IT', JAM: 'JM',
+  JPN: 'JP', JOR: 'JO', KAZ: 'KZ', KEN: 'KE', KIR: 'KI', PRK: 'KP', KOR: 'KR',
+  KWT: 'KW', KGZ: 'KG', LAO: 'LA', LVA: 'LV', LBN: 'LB', LSO: 'LS', LBR: 'LR',
+  LBY: 'LY', LIE: 'LI', LTU: 'LT', LUX: 'LU', MDG: 'MG', MWI: 'MW', MYS: 'MY',
+  MDV: 'MV', MLI: 'ML', MLT: 'MT', MHL: 'MH', MRT: 'MR', MUS: 'MU', MEX: 'MX',
+  FSM: 'FM', MDA: 'MD', MCO: 'MC', MNG: 'MN', MNE: 'ME', MAR: 'MA', MOZ: 'MZ',
+  MMR: 'MM', NAM: 'NA', NRU: 'NR', NPL: 'NP', NLD: 'NL', NZL: 'NZ', NIC: 'NI',
+  NER: 'NE', NGA: 'NG', NOR: 'NO', OMN: 'OM', PAK: 'PK', PLW: 'PW', PAN: 'PA',
+  PNG: 'PG', PRY: 'PY', PER: 'PE', PHL: 'PH', POL: 'PL', PRT: 'PT', QAT: 'QA',
+  ROU: 'RO', RUS: 'RU', RWA: 'RW', KNA: 'KN', LCA: 'LC', VCT: 'VC', WSM: 'WS',
+  SMR: 'SM', STP: 'ST', SAU: 'SA', SEN: 'SN', SRB: 'RS', SYC: 'SC', SLE: 'SL',
+  SGP: 'SG', SVK: 'SK', SVN: 'SI', SLB: 'SB', SOM: 'SO', ZAF: 'ZA', SSD: 'SS',
+  ESP: 'ES', LKA: 'LK', SDN: 'SD', SUR: 'SR', SWE: 'SE', CHE: 'CH', SYR: 'SY',
+  TWN: 'TW', TJK: 'TJ', TZA: 'TZ', THA: 'TH', TLS: 'TL', TGO: 'TG', TON: 'TO',
+  TTO: 'TT', TUN: 'TN', TUR: 'TR', TKM: 'TM', TUV: 'TV', UGA: 'UG', UKR: 'UA',
+  ARE: 'AE', GBR: 'GB', USA: 'US', URY: 'UY', UZB: 'UZ', VUT: 'VU', VEN: 'VE',
+  VNM: 'VN', YEM: 'YE', ZMB: 'ZM', ZWE: 'ZW',
+  // Common IOC / Sportradar aliases that differ from ISO-3
+  ENG: 'GB', SCO: 'GB', WAL: 'GB', NIR: 'GB', GER: 'DE', NED: 'NL', SUI: 'CH',
+  POR: 'PT', GRE: 'GR', RSA: 'ZA', NGR: 'NG', MAS: 'MY', KSA: 'SA', UAE: 'AE',
+  CRO: 'HR', SLO: 'SI', BUL: 'BG', LAT: 'LV', CHI: 'CL', DEN: 'DK', POL2: 'PL',
 }
 function flag(code?: string | null): string {
   if (!code) return ''
@@ -177,7 +199,8 @@ export class SportradarService {
 
   async syncSchedule(): Promise<number> {
     let n = 0
-    for (let i = 0; i < 4; i++) {
+    // Fetch the last week of matches; they are upserted and kept as persistent history.
+    for (let i = 0; i < 7; i++) {
       const d = new Date()
       d.setDate(d.getDate() - i)
       const date = ymd(d)
@@ -225,7 +248,7 @@ export class SportradarService {
     return n
   }
 
-  private async upsertEvent(s: any): Promise<boolean> {
+  private async upsertEvent(s: any, seasonHint?: string): Promise<boolean> {
     const ev = s.sport_event ?? s
     if (!ev?.id) return false
     const comp = ev.competitors ?? []
@@ -236,6 +259,9 @@ export class SportradarService {
         status: st.status ?? ev.status ?? 'not_started',
         scheduled: ev.start_time ? new Date(ev.start_time) : null,
         tournamentId: ev.sport_event_context?.competition?.id ?? null,
+        // Season summaries omit the season context per event, so fall back to the
+        // season we fetched under (seasonHint).
+        seasonId: ev.sport_event_context?.season?.id ?? seasonHint ?? null,
         homeName: comp?.[0]?.name ?? null,
         awayName: comp?.[1]?.name ?? null,
         isHistorical: (st.status ?? '') === 'closed',
@@ -451,7 +477,12 @@ export class SportradarService {
   private toMatch(e: SrEvent) {
     const st = (e.payload as any)?.sport_event_status ?? {}
     const comp = (e.payload as any)?.sport_event?.competitors ?? []
-    const status = e.status === 'closed' ? 'finished' : e.status === 'live' ? 'live' : 'upcoming'
+    const raw = (e.status ?? '').toLowerCase()
+    const status = ['closed', 'ended', 'complete', 'completed', 'finished'].includes(raw)
+      ? 'finished'
+      : ['live', 'inprogress', 'in_progress', 'started', 'interrupted'].includes(raw)
+        ? 'live'
+        : 'upcoming'
     const score =
       st.home_score != null && st.away_score != null ? `${st.home_score}-${st.away_score}` : ''
     return {
@@ -498,8 +529,10 @@ export class SportradarService {
     return set
   }
 
-  async getMatchDays() {
-    const rows = await this.events.find({ order: { scheduled: 'DESC' }, take: 200 })
+  async getMatchDays(seasonId?: string) {
+    const rows = seasonId
+      ? await this.eventsForSeason(seasonId)
+      : await this.events.find({ order: { scheduled: 'DESC' }, take: 1000 })
     const byDay = new Map<string, SrEvent[]>()
     for (const e of rows) {
       const day = e.scheduled ? ymd(new Date(e.scheduled)) : 'unknown'
@@ -507,8 +540,9 @@ export class SportradarService {
       byDay.get(day)!.push(e)
     }
     const today = ymd(new Date())
-    // Requirement: within each day, surface Sweden / Malmö events first.
-    return [...byDay.entries()].slice(0, 4).map(([date, evs]) => {
+    // Newest day first; return every day (all tournaments, or the whole season).
+    const days = [...byDay.entries()].sort((a, b) => b[0].localeCompare(a[0]))
+    return days.map(([date, evs]) => {
       evs.sort((a, b) => this.eventPriority(b) - this.eventPriority(a))
       return {
         date,
@@ -538,8 +572,8 @@ export class SportradarService {
    * feed, so this derives one from the matches we already have.
    */
   /** Per-competitor tally (played/won/lost/games) derived from synced matches. */
-  private async competitorStats() {
-    const events = await this.events.find({ take: 1000 })
+  private async competitorStats(eventsArg?: SrEvent[]) {
+    const events = eventsArg ?? (await this.events.find({ take: 1000 }))
     const tbl = new Map<
       string,
       {
@@ -586,8 +620,8 @@ export class SportradarService {
     return tbl
   }
 
-  private async computeStandings() {
-    const tbl = await this.competitorStats()
+  private async computeStandings(eventsArg?: SrEvent[]) {
+    const tbl = await this.competitorStats(eventsArg)
     return [...tbl.values()]
       .sort((x, y) => y.won - x.won || x.lost - y.lost || y.played - x.played)
       .map((r, i) => ({
@@ -613,13 +647,18 @@ export class SportradarService {
     return computed.length > stored.length ? computed : stored
   }
 
-  async getStandings(bracket: 'top' | 'bottom') {
-    const rows = await this.standingsRows()
+  async getStandings(bracket: 'top' | 'bottom', seasonId?: string) {
+    const rows = seasonId
+      ? await this.computeStandings(await this.eventsForSeason(seasonId))
+      : await this.standingsRows()
     return rows.filter((r) => (bracket === 'bottom' ? r.position > 8 : r.position <= 8))
   }
 
-  async getLatest(_bracket: 'top' | 'bottom') {
-    const rows = await this.events.find({ where: { status: 'closed' }, order: { scheduled: 'DESC' }, take: 60 })
+  async getLatest(_bracket: 'top' | 'bottom', seasonId?: string) {
+    const base = seasonId
+      ? await this.eventsForSeason(seasonId)
+      : await this.events.find({ where: { status: 'closed' }, order: { scheduled: 'DESC' }, take: 60 })
+    const rows = base.filter((e) => e.status === 'closed')
     rows.sort(
       (a, b) =>
         this.eventPriority(b) - this.eventPriority(a) ||
@@ -657,8 +696,8 @@ export class SportradarService {
   }
 
   /** Identity (name/country/gender) of every player seen in synced matches. */
-  private async playersFromMatches() {
-    const events = await this.events.find({ take: 1000 })
+  private async playersFromMatches(eventsArg?: SrEvent[]) {
+    const events = eventsArg ?? (await this.events.find({ take: 1000 }))
     const map = new Map<string, { name: string; code: string | null; country: string | null; gender: string | null }>()
     for (const e of events) {
       const ctx = (e.payload as any)?.sport_event?.sport_event_context ?? {}
@@ -684,27 +723,27 @@ export class SportradarService {
    * season-competitors endpoint returns nothing. The SrCompetitor table (if synced)
    * is merged in for any extra players. Stats come from completed matches.
    */
-  async getSweden() {
-    const fromMatches = await this.playersFromMatches()
-    const stats = await this.competitorStats()
-
-    // Merge any synced competitor records (don't depend on them).
-    for (const c of await this.competitors.find()) {
-      if (!fromMatches.has(c.id)) {
-        fromMatches.set(c.id, {
-          name: c.name,
-          code: c.countryCode,
-          country: c.country,
-          gender: c.gender ?? null,
-        })
+  /** Build the player list (identity + stats + global rank) from a set of events. */
+  private async buildPlayers(eventsArg?: SrEvent[]) {
+    const fromMatches = await this.playersFromMatches(eventsArg)
+    const stats = await this.competitorStats(eventsArg)
+    if (!eventsArg) {
+      // Merge any synced competitor records (only for the full/global view).
+      for (const c of await this.competitors.find()) {
+        if (!fromMatches.has(c.id)) {
+          fromMatches.set(c.id, {
+            name: c.name,
+            code: c.countryCode,
+            country: c.country,
+            gender: c.gender ?? null,
+          })
+        }
       }
     }
-
     const rankById = new Map<string, number>()
     ;[...stats.entries()]
       .sort(([, x], [, y]) => y.won - x.won || x.lost - y.lost || y.played - x.played)
       .forEach(([id], i) => rankById.set(id, i + 1))
-
     const players = [...fromMatches.entries()].map(([id, m]) => {
       const st = stats.get(id)
       const decided = (st?.won ?? 0) + (st?.lost ?? 0)
@@ -721,29 +760,33 @@ export class SportradarService {
         rank: rankById.get(id) ?? null,
       }
     })
+    const byRank = (
+      a: { rank: number | null; name: string },
+      b: { rank: number | null; name: string },
+    ) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name)
+    return players.sort(byRank)
+  }
 
+  async getSweden(seasonId?: string) {
+    const events = seasonId ? await this.eventsForSeason(seasonId) : undefined
+    const players = await this.buildPlayers(events)
     const isFemale = (p: { gender: string | null }) => (p.gender ?? '').toLowerCase() === 'female'
-    const byRank = (a: { rank: number | null; name: string }, b: { rank: number | null; name: string }) =>
-      (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name)
-    const women = players.filter(isFemale).sort(byRank)
-    const men = players.filter((p) => !isFemale(p)).sort(byRank)
-
-    // Sweden-only list (robust: 2- or 3-letter code, or country name).
+    const women = players.filter(isFemale)
+    const men = players.filter((p) => !isFemale(p))
     const isSwe = (p: { country: { code: string; name: string } }) => {
       const code = (p.country.code ?? '').toUpperCase()
       const name = (p.country.name ?? '').toLowerCase()
       return code === 'SE' || code.startsWith('SWE') || name === 'sweden'
     }
-    const sweden = players.filter(isSwe).sort(byRank)
-
-    // Diagnostic: which nationalities are actually present in the data.
+    const sweden = players.filter(isSwe)
     const countries: Record<string, number> = {}
     for (const p of players) {
       const k = p.country.name || p.country.code || '—'
       countries[k] = (countries[k] ?? 0) + 1
     }
-
-    const groupStandings = (await this.standingsRows()).slice(0, 8)
+    const groupStandings = (
+      events ? await this.computeStandings(events) : await this.standingsRows()
+    ).slice(0, 8)
     return {
       groupStandings,
       overallStats: [],
@@ -753,6 +796,62 @@ export class SportradarService {
       countries,
       counts: { men: men.length, women: women.length, sweden: sweden.length },
     }
+  }
+
+  /** Fetch a season's full match list on demand (Season Summaries endpoint). */
+  async syncSeasonSummaries(seasonId: string): Promise<number> {
+    if (!seasonId) return 0
+    let res: any
+    try {
+      res = await this.client.get<any>(
+        `season-summaries:${seasonId}`,
+        `/seasons/${seasonId}/summaries.json`,
+        3600,
+      )
+    } catch {
+      return 0
+    }
+    const summaries: any[] = res.data?.summaries ?? []
+    let n = 0
+    for (const s of summaries) n += (await this.upsertEvent(s, seasonId)) ? 1 : 0
+    return n
+  }
+
+  /** Detail for one calendar event (a season): info + matches + players + standings. */
+  /**
+   * Events belonging to one season. ALWAYS pulls the season's full match list
+   * (Season Summaries — cached, so repeat calls are cheap) before filtering, so a
+   * single match already present from the daily schedule doesn't shadow the rest
+   * of the tournament.
+   */
+  private async eventsForSeason(seasonId: string): Promise<SrEvent[]> {
+    await this.syncSeasonSummaries(seasonId)
+    return (await this.events.find({ take: 5000 })).filter(
+      (e) =>
+        e.seasonId === seasonId ||
+        (e.payload as any)?.sport_event?.sport_event_context?.season?.id === seasonId,
+    )
+  }
+
+  async getEvent(seasonId: string) {
+    const events = await this.eventsForSeason(seasonId)
+    const cal = await this.calendar.findOne({ where: { id: seasonId } })
+    const ctxSeason = (events[0]?.payload as any)?.sport_event?.sport_event_context?.season
+    const info = {
+      id: seasonId,
+      name: cal?.name ?? ctxSeason?.name ?? seasonId,
+      gender: cal?.gender ?? null,
+      dateFrom: cal?.startDate ?? ctxSeason?.start_date ?? null,
+      dateTo: cal?.endDate ?? ctxSeason?.end_date ?? null,
+      country: country(cal?.countryName ?? cal?.countryCode ?? '', cal?.countryCode ?? null),
+      venue: cal?.venue ?? null,
+    }
+    const matches = [...events]
+      .sort((a, b) => (b.scheduled?.getTime() ?? 0) - (a.scheduled?.getTime() ?? 0))
+      .map((e) => this.toMatch(e))
+    const players = await this.buildPlayers(events)
+    const standings = await this.computeStandings(events)
+    return { info, matches, players, standings }
   }
 
   getLive() {
