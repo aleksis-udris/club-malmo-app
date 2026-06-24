@@ -14,6 +14,11 @@ const routes = [
     name: 'calendar',
     component: () => import('@/views/CalendarView.vue'),
   },
+  {
+    path: '/event/:id',
+    name: 'event',
+    component: () => import('@/views/EventView.vue'),
+  },
   { path: '/latest', redirect: '/calendar' },
   { path: '/sweden', name: 'sweden', component: () => import('@/views/SwedenView.vue') },
   {

@@ -30,20 +30,24 @@ export class ContentService {
     }
   }
 
-  matchDays() {
-    return this.sr.getMatchDays()
+  matchDays(season?: string) {
+    return this.sr.getMatchDays(season)
   }
-  standings(bracket: 'top' | 'bottom') {
-    return this.sr.getStandings(bracket)
+  standings(bracket: 'top' | 'bottom', season?: string) {
+    return this.sr.getStandings(bracket, season)
   }
-  latest(bracket: 'top' | 'bottom') {
-    return this.sr.getLatest(bracket)
+  latest(bracket: 'top' | 'bottom', season?: string) {
+    return this.sr.getLatest(bracket, season)
   }
-  sweden() {
-    return this.sr.getSweden()
+  sweden(season?: string) {
+    return this.sr.getSweden(season)
   }
 
   calendar() {
     return this.sr.getCalendar()
+  }
+
+  event(id: string) {
+    return this.sr.getEvent(id)
   }
 }

@@ -5,6 +5,7 @@ import StateBlock from '@/components/StateBlock.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import CountryFlag from '@/components/CountryFlag.vue'
 import { useApi } from '@/composables/useApi'
+import { useSeason } from '@/composables/useSeason'
 import type { Player } from '@/types'
 
 interface SwedenData {
@@ -14,7 +15,8 @@ interface SwedenData {
   countries?: Record<string, number>
 }
 
-const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
+const { withSeason } = useSeason()
+const { data, loading, error, retry } = useApi<SwedenData>(() => withSeason('/content/sweden'))
 
 // Sweden-only table (computed by the backend) goes first; then full lists.
 const sections = computed(() => {
