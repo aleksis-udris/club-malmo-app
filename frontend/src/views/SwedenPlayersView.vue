@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import SectionCard from '@/components/SectionCard.vue'
 import StateBlock from '@/components/StateBlock.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import CountryFlag from '@/components/CountryFlag.vue'
 import { useApi } from '@/composables/useApi'
 import { useSeason } from '@/composables/useSeason'
 import type { Player } from '@/types'
@@ -38,8 +37,6 @@ const initials = (name: string) =>
     .join('')
     .slice(0, 2)
     .toUpperCase()
-
-const sexLabel = (g?: string | null) => (g ? (g.toLowerCase() === 'female' ? 'Women' : 'Men') : '')
 </script>
 
 <template>
