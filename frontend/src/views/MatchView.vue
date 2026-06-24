@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import SectionCard from '@/components/SectionCard.vue'
-import MatchTable from '@/components/MatchTable.vue'
 import StateBlock from '@/components/StateBlock.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import CountryFlag from '@/components/CountryFlag.vue'

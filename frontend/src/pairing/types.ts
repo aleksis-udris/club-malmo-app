@@ -26,6 +26,8 @@ export interface MatchBoard {
   awayFouls: number
   serving: 'home' | 'away'
   winner: 'home' | 'away' | null
+  /** Epoch ms when the match finished (null while unfinished). Used to time-box the winner banner. */
+  endedAt: number | null
 }
 
 export interface CourtState {

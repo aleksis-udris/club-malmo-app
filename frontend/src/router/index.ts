@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getEffectiveDeviceClass, type DeviceClass } from '@/security/deviceDetect'
+import {
+  detectDeviceClass,
+  getEffectiveDeviceClass,
+  type DeviceClass,
+} from '@/security/deviceDetect'
 
 const routes = [
   { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
@@ -19,7 +23,6 @@ const routes = [
     name: 'event',
     component: () => import('@/views/EventView.vue'),
   },
-  { path: '/latest', redirect: '/calendar' },
   { path: '/sweden', name: 'sweden', component: () => import('@/views/SwedenView.vue') },
   {
     path: '/players',
@@ -64,7 +67,9 @@ router.beforeEach((to) => {
   const need = to.meta.requireDeviceClass as DeviceClass | DeviceClass[] | undefined
   if (!need) return true
   const allowed = Array.isArray(need) ? need : [need]
-  const cls = getEffectiveDeviceClass()
+  // The TV scoreboard must be reachable ONLY from a real TV: ignore the dev/query
+  // override and use raw detection. Other restricted routes still allow the override.
+  const cls = allowed.includes('TV') ? detectDeviceClass() : getEffectiveDeviceClass()
   if (allowed.includes(cls)) return true
   return {
     name: 'device-blocked',

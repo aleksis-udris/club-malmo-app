@@ -59,6 +59,7 @@ function emptyBoard(): MatchBoard {
     awayFouls: 0,
     serving: 'home',
     winner: null,
+    endedAt: null,
   }
 }
 
@@ -239,6 +240,7 @@ function markLive(court: CourtState) {
 
 function endMatch(court: CourtState, winner: 'home' | 'away') {
   court.board.winner = winner
+  court.board.endedAt = Date.now()
   court.status = 'FINISHED'
   // Requirement 5: immediately generate a new pairing code after a match ends,
   // and release the controller session.

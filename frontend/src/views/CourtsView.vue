@@ -7,6 +7,28 @@ import type { CourtStatus } from '@/pairing/types'
 
 const { courts, resetCourt, rotateCode } = useCourtHub()
 
+// ─── Shared password gate ─────────────────────────────────────────────
+// One password for everyone (no user accounts). Configure with
+// VITE_COURTS_PASSWORD; the value below is only the fallback default.
+const COURTS_PASSWORD = (import.meta.env.VITE_COURTS_PASSWORD as string) || 'malmo2026'
+
+// Always starts locked — the password is required every time the view is opened
+// (no persistence across navigations or reloads).
+const unlocked = ref(false)
+const passwordInput = ref('')
+const authError = ref('')
+
+function unlock() {
+  if (passwordInput.value === COURTS_PASSWORD) {
+    unlocked.value = true
+    authError.value = ''
+    passwordInput.value = ''
+  } else {
+    authError.value = 'Wrong password. Please try again.'
+    passwordInput.value = ''
+  }
+}
+
 const nowTs = ref(Date.now())
 const timer = window.setInterval(() => (nowTs.value = Date.now()), 1000)
 onBeforeUnmount(() => window.clearInterval(timer))
@@ -28,7 +50,39 @@ function countdown(expiresAt: number): string {
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div>
+    <!-- Password gate: shown until the shared password is entered -->
+    <div v-if="!unlocked" class="mx-auto max-w-sm space-y-5 py-12 text-center">
+    <div class="text-5xl"><span class="icon" aria-hidden="true">lock</span></div>
+    <h1 class="text-2xl font-extrabold text-on-surface">Courts are password protected</h1>
+    <p class="text-sm text-outline">Enter the shared password to open the courts control panel.</p>
+
+    <form
+      class="space-y-3 rounded-2xl border border-primary-container bg-surface-container-lowest p-5 shadow-sm"
+      @submit.prevent="unlock"
+    >
+      <input
+        v-model="passwordInput"
+        type="password"
+        autofocus
+        placeholder="Password"
+        class="w-full rounded-lg border border-primary-container bg-surface-container-lowest px-3 py-2 text-center text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-container"
+      />
+      <p v-if="authError" class="text-sm font-semibold text-rose-600">{{ authError }}</p>
+      <button
+        type="submit"
+        class="w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 active:scale-95"
+      >
+        Unlock
+      </button>
+    </form>
+
+    <RouterLink to="/" class="inline-block text-sm font-semibold text-primary hover:underline">
+      ← Back to home
+    </RouterLink>
+  </div>
+
+  <div v-else class="space-y-5">
     <div>
       <h1 class="text-2xl font-extrabold text-on-surface">Courts</h1>
       <p class="text-sm text-outline">
@@ -108,5 +162,6 @@ function countdown(expiresAt: number): string {
     </p>
 
     <AppFooter />
+  </div>
   </div>
 </template>

@@ -29,6 +29,14 @@ const winnerName = computed(() => {
   if (!b || !b.winner) return null
   return b.winner === 'home' ? b.home.name : b.away.name
 })
+
+// Show the winner banner only for 2 minutes after the match ends, then hide it.
+const WINNER_BANNER_MS = 2 * 60 * 1000
+const showWinner = computed(() => {
+  const b = board.value
+  if (!b || !b.winner || !b.endedAt) return false
+  return nowTs.value - b.endedAt < WINNER_BANNER_MS
+})
 </script>
 
 <template>
@@ -74,7 +82,7 @@ const winnerName = computed(() => {
         v-if="showCode"
         class="flex flex-1 flex-col items-center justify-center px-4 py-8 text-center"
       >
-        <p v-if="winnerName" class="mb-6 text-2xl font-black text-accent sm:text-3xl">
+        <p v-if="showWinner" class="mb-6 text-2xl font-black text-accent sm:text-3xl">
           <span class="icon" aria-hidden="true">emoji_events</span> {{ winnerName }} wins the match!
         </p>
 

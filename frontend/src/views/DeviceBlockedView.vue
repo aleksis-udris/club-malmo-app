@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { detectDeviceClass, setDeviceOverride, type DeviceClass } from '@/security/deviceDetect'
+import { useRoute } from 'vue-router'
+import { detectDeviceClass, type DeviceClass } from '@/security/deviceDetect'
 
 const route = useRoute()
-const router = useRouter()
 
 const need = computed(
   () =>
@@ -13,21 +12,12 @@ const need = computed(
       .filter(Boolean) as DeviceClass[],
 )
 const got = computed(() => String(route.query.got ?? detectDeviceClass()))
-const target = computed(() => String(route.query.to ?? '/'))
 
 const label: Record<string, string> = {
   MOBILE: 'a mobile phone',
   TABLET: 'a tablet',
   TV: 'a TV display',
   DESKTOP: 'a desktop browser',
-}
-
-const isDev = !import.meta.env.PROD
-
-// Dev-only: continue by overriding the detected class to a permitted one.
-function previewAs(cls: DeviceClass) {
-  setDeviceOverride(cls)
-  router.replace(target.value)
 }
 </script>
 
@@ -49,24 +39,9 @@ function previewAs(cls: DeviceClass) {
     >
       <p class="font-semibold text-on-surface">Why am I seeing this?</p>
       <p class="mt-1 text-xs text-on-surface-variant">
-        The controller is phone-only and the scoreboard is TV-only. In production this is enforced
-        on the server with device registration tokens and session authentication — the check below
-        is only a client-side convenience.
+        The scoreboard is TV-only and the controller is phone-only. These screens open only on the
+        right device — the TV scoreboard can be reached only from a television.
       </p>
-    </div>
-
-    <div v-if="isDev" class="space-y-2">
-      <p class="text-xs font-semibold uppercase tracking-wider text-outline">Developer preview</p>
-      <div class="flex flex-wrap justify-center gap-2">
-        <button
-          v-for="n in need"
-          :key="n"
-          class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white active:scale-95"
-          @click="previewAs(n)"
-        >
-          Continue as {{ label[n] ?? n }}
-        </button>
-      </div>
     </div>
 
     <RouterLink to="/" class="inline-block text-sm font-semibold text-primary hover:underline">

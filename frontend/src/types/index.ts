@@ -1,6 +1,6 @@
 /**
  * Shared domain types for the ESF U15 & U17 Squash Championship app.
- * All data is mock/static — there is no backend.
+ * Served from the NestJS backend API (see backend/src/content).
  */
 
 export interface Country {

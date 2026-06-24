@@ -8,49 +8,34 @@ import { useApi } from '@/composables/useApi'
 import { useSeason } from '@/composables/useSeason'
 import type { Player } from '@/types'
 
-interface SwedenData {
+interface PlayersData {
   men: Player[]
   women: Player[]
-  sweden: Player[]
-  countries?: Record<string, number>
 }
 
 const { withSeason } = useSeason()
-const { data, loading, error, retry } = useApi<SwedenData>(() => withSeason('/content/sweden'))
+const { data, loading, error, retry } = useApi<PlayersData>(() => withSeason('/content/sweden'))
 
-// Sweden-only table (computed by the backend) goes first; then full lists.
-const sections = computed(() => {
+// All players in scope, ranked by wins then matches played.
+const players = computed<Player[]>(() => {
   if (!data.value) return []
-  const base = [
-    { key: 'men', label: 'Players', players: data.value.men },
-    { key: 'women', label: "Women's draw", players: data.value.women },
-  ].filter((s) => s.players.length)
-  const swe = data.value.sweden?.length
-    ? [{ key: 'sweden', label: '🇸🇪 Sweden players', players: data.value.sweden }]
-    : []
-  return [...swe, ...base]
+  return [...(data.value.men ?? []), ...(data.value.women ?? [])].sort(
+    (a, b) => (b.won ?? 0) - (a.won ?? 0) || (b.played ?? 0) - (a.played ?? 0),
+  )
 })
 
-const initials = (name: string) =>
-  name
-    .split(/[ ,]+/)
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-
-const sexLabel = (g?: string | null) =>
-  g ? (g.toLowerCase() === 'female' ? 'Women' : 'Men') : ''
+const cat = (g?: string | null) => (g ? (g.toLowerCase() === 'female' ? 'W' : 'M') : '—')
+const pct = (p?: number) => (typeof p === 'number' ? `${Math.round(p)}%` : '—')
 </script>
 
 <template>
   <div class="space-y-5">
     <div>
-      <h1 class="text-2xl font-extrabold text-on-surface">Sweden Club Players</h1>
-      <p class="text-sm text-outline">Men's and women's squads · matches played</p>
+      <h1 class="text-2xl font-extrabold text-on-surface">Players</h1>
+      <p class="text-sm text-outline">Match, win and game statistics for every player</p>
     </div>
 
-    <StateBlock v-if="loading" type="loading" />
+    <StateBlock v-if="loading" type="loading" title="Loading players…" />
     <StateBlock v-else-if="error" type="error" :message="error">
       <button
         class="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
@@ -60,44 +45,50 @@ const sexLabel = (g?: string | null) =>
       </button>
     </StateBlock>
 
-    <StateBlock
-      v-else-if="!sections.length"
-      type="empty"
-      message="No players have been synced yet for the current season."
-    />
-
-    <div v-else class="space-y-6">
-      <SectionCard
-        v-for="squad in [
-          { key: 'men', label: 'Men', icon: '<span class="icon" aria-hidden="true">man</span>', players: data.men },
-          { key: 'women', label: 'Women', icon: '<span class="icon" aria-hidden="true">woman</span>', players: data.women },
-        ]"
-        :key="squad.key"
-        :title="squad.label"
-        :subtitle="`${squad.players.length} players`"
-      >
-        <ul v-if="squad.players.length" class="divide-y divide-primary-container">
-          <li
-            v-for="(player, i) in squad.players as Player[]"
-            :key="player.id"
-            class="flex items-center gap-3 px-3 py-3 transition hover:bg-primary-container/60"
-          >
-            <span class="w-5 text-sm font-bold text-outline">{{ i + 1 }}</span>
-            <span
-              class="grid h-9 w-9 place-items-center rounded-full bg-primary-container text-xs font-bold text-primary"
-              >{{ initials(player.name) }}</span
+    <SectionCard v-else title="All players" :subtitle="`${players.length} players`">
+      <StateBlock
+        v-if="!players.length"
+        type="empty"
+        message="No players have been synced yet for the current season."
+      />
+      <div v-else class="overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="text-left text-xs uppercase tracking-wider text-outline">
+              <th class="px-2.5 py-3 font-semibold">#</th>
+              <th class="px-2.5 py-3 font-semibold">Player</th>
+              <th class="px-2.5 py-3 font-semibold">Country</th>
+              <th class="px-2.5 py-3 text-center font-semibold">Cat.</th>
+              <th class="px-2.5 py-3 text-center font-semibold">Played</th>
+              <th class="px-2.5 py-3 text-center font-semibold">W</th>
+              <th class="px-2.5 py-3 text-center font-semibold">L</th>
+              <th class="px-2.5 py-3 text-center font-semibold">Games</th>
+              <th class="px-2.5 py-3 text-center font-semibold">Win%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(p, i) in players"
+              :key="p.id"
+              class="border-t border-primary-container transition hover:bg-primary-container/60"
             >
-            <span class="flex-1 font-medium text-on-surface">{{ player.name }}</span>
-            <span
-              class="rounded-full bg-primary-container px-3 py-1 text-xs font-bold text-primary"
-            >
-              {{ player.played }} played
-            </span>
-          </li>
-        </ul>
-        <StateBlock v-else type="empty" message="No players registered." />
-      </SectionCard>
-    </div>
+              <td class="px-2.5 py-3 font-bold text-outline">{{ i + 1 }}</td>
+              <td class="px-2.5 py-3 font-medium text-on-surface">{{ p.name }}</td>
+              <td class="px-2.5 py-3">
+                <CountryFlag v-if="p.country" :country="p.country" />
+                <span v-else class="text-outline">—</span>
+              </td>
+              <td class="px-2.5 py-3 text-center text-outline">{{ cat(p.gender) }}</td>
+              <td class="px-2.5 py-3 text-center tabular-nums">{{ p.played }}</td>
+              <td class="px-2.5 py-3 text-center tabular-nums">{{ p.won ?? '—' }}</td>
+              <td class="px-2.5 py-3 text-center tabular-nums">{{ p.lost ?? '—' }}</td>
+              <td class="px-2.5 py-3 text-center tabular-nums">{{ p.games ?? '—' }}</td>
+              <td class="px-2.5 py-3 text-center tabular-nums">{{ pct(p.winPct) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </SectionCard>
 
     <AppFooter />
   </div>

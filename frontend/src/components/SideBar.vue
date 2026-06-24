@@ -14,21 +14,15 @@ const groups: { heading: string; items: NavItem[] }[] = [
     items: [
       { to: '/', label: 'Home', icon: '<span class="icon" aria-hidden="true">home</span>' },
       { to: '/matches', label: 'Matches', icon: '<span class="icon" aria-hidden="true">calendar_month</span>' },
+      { to: '/calendar', label: 'Event Calendar', icon: '<span class="icon" aria-hidden="true">event</span>' },
       { to: '/standings', label: 'Standings (1–8)', icon: '<span class="icon" aria-hidden="true">emoji_events</span>' },
-      { to: '/latest', label: 'Latest (9–16)', icon: '<span class="icon" aria-hidden="true">assignment</span>' },
-    ],
-  },
-  {
-    heading: 'Sweden',
-    items: [
-      { to: '/sweden', label: 'Club Sweden', icon: '<span class="icon" aria-hidden="true">flag</span>' },
       { to: '/players', label: 'Players', icon: '<span class="icon" aria-hidden="true">group</span>' },
+      { to: '/sweden', label: 'Club Sweden', icon: '<span class="icon" aria-hidden="true">flag</span>' },
     ],
   },
   {
     heading: 'Live',
     items: [
-      { to: '/courts', label: 'Courts', icon: '<span class="icon" aria-hidden="true">sports</span>' },
       { to: '/controller', label: 'Controller', icon: '<span class="icon" aria-hidden="true">smartphone</span>' },
     ],
   },
@@ -107,9 +101,6 @@ const open = ref(false)
       </div>
     </nav>
 
-    <div class="border-t border-primary-container px-6 py-4 text-xs text-outline">
-      Frontend demo · mock data
-    </div>
   </aside>
 </template>
 

@@ -44,16 +44,16 @@ const quickLinks = [
     desc: 'Browse matches by date',
   },
   {
+    to: '/calendar',
+    icon: '<span class="icon" aria-hidden="true">event</span>',
+    label: 'Event Calendar',
+    desc: 'Tournaments · pick one to filter',
+  },
+  {
     to: '/standings',
     icon: '<span class="icon" aria-hidden="true">emoji_events</span>',
     label: 'Standings 1–8',
     desc: 'ESF championship table',
-  },
-  {
-    to: '/latest',
-    icon: '<span class="icon" aria-hidden="true">assignment</span>',
-    label: 'Latest 9–16',
-    desc: 'Lower-bracket results',
   },
   {
     to: '/sweden',
@@ -66,18 +66,6 @@ const quickLinks = [
     icon: '<span class="icon" aria-hidden="true">group</span>',
     label: 'Players',
     desc: 'Men & women squads',
-  },
-  {
-    to: '/courts',
-    icon: '<span class="icon" aria-hidden="true">sports</span>',
-    label: 'Courts',
-    desc: 'TV pairing & live status',
-  },
-  {
-    to: '/controller',
-    icon: '<span class="icon" aria-hidden="true">smartphone</span>',
-    label: 'Score controller',
-    desc: 'Pair & score a court',
   },
 ]
 </script>

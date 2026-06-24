@@ -50,11 +50,22 @@ const A3: Record<string, string> = {
   POR: 'PT', GRE: 'GR', RSA: 'ZA', NGR: 'NG', MAS: 'MY', KSA: 'SA', UAE: 'AE',
   CRO: 'HR', SLO: 'SI', BUL: 'BG', LAT: 'LV', CHI: 'CL', DEN: 'DK', POL2: 'PL',
 }
+const NEAR_SWEDEN = new Set([
+  'SE', 'NO', 'DK', 'FI', 'IS', 'EE', 'LV', 'LT', 'PL', 'DE', 'NL',
+])
+// 2 = Sweden, 1 = nearby Nordic/Baltic, 0 = elsewhere.
+function regionPriority(code?: string | null, text?: string | null): number {
+  const cc = (code ?? '').toUpperCase()
+  const t = (text ?? '').toLowerCase()
+  if (cc === 'SE' || cc === 'SWE' || t.includes('sweden') || t.includes('malm')) return 2
+  if (NEAR_SWEDEN.has(cc) || NEAR_SWEDEN.has(A3[cc] ?? '')) return 1
+  return 0
+}
 function flag(code?: string | null): string {
-  if (!code) return "🏳️";
+  if (!code) return "";
   let cc = code.toUpperCase();
   if (cc.length === 3) cc = A3[cc] ?? "";
-  if (cc.length !== 2) return "🏳️";
+  if (cc.length !== 2) return "";
   return String.fromCodePoint(
     ...[...cc].map((ch) => 0x1f1e6 + (ch.charCodeAt(0) - 65)),
   );

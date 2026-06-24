@@ -2,7 +2,6 @@
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import SideBar from './components/SideBar.vue'
-import DataSourceBadge from './components/DataSourceBadge.vue'
 
 const route = useRoute()
 // The TV scoreboard (reachable from the controller) is a fullscreen display.
@@ -23,7 +22,6 @@ const fullscreen = computed(() => route.meta.fullscreen === true)
         </RouterView>
       </div>
     </main>
-    <DataSourceBadge />
   </div>
 </template>
 
