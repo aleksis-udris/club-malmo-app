@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import SectionCard from '@/components/SectionCard.vue'
+import MatchTable from '@/components/MatchTable.vue'
 import StateBlock from '@/components/StateBlock.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import CountryFlag from '@/components/CountryFlag.vue'
@@ -83,9 +84,10 @@ const statusLabel: Record<Match['status'], string> = {
     </div>
 
     <StateBlock v-if="loading" type="loading" title="Loading matches…" />
+
     <StateBlock v-else-if="error" type="error" :message="error">
       <button
-        class="mt-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+        class="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
         @click="retry"
       >
         Retry

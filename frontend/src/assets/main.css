@@ -1,27 +1,99 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
 
-/* ----------------------------------------------------------------------
-   Design tokens — ESF squash brand palette
-   Exposed as Tailwind v4 theme variables so utilities like bg-brand-600
-   and text-brand-50 are generated automatically.
----------------------------------------------------------------------- */
 @theme {
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #d9e6ff;
-  --color-brand-200: #bcd3ff;
-  --color-brand-300: #8eb5ff;
-  --color-brand-400: #598cff;
-  --color-brand-500: #3366ff;
-  --color-brand-600: #1f47e6;
-  --color-brand-700: #1837b4;
-  --color-brand-800: #1a3290;
-  --color-brand-900: #1b2f73;
-  --color-brand-950: #141f47;
+  /* ── M3 generated palette (light) ── */
+  --md-sys-color-primary: rgb(80 91 146);
+  --md-sys-color-surface-tint: rgb(80 91 146);
+  --md-sys-color-on-primary: rgb(255 255 255);
+  --md-sys-color-primary-container: rgb(221 225 255);
+  --md-sys-color-on-primary-container: rgb(56 67 121);
+  --md-sys-color-secondary: rgb(90 93 114);
+  --md-sys-color-on-secondary: rgb(255 255 255);
+  --md-sys-color-secondary-container: rgb(223 225 249);
+  --md-sys-color-on-secondary-container: rgb(66 70 89);
+  --md-sys-color-tertiary: rgb(118 84 110);
+  --md-sys-color-on-tertiary: rgb(255 255 255);
+  --md-sys-color-tertiary-container: rgb(255 215 243);
+  --md-sys-color-on-tertiary-container: rgb(92 60 85);
+  --md-sys-color-error: rgb(186 26 26);
+  --md-sys-color-on-error: rgb(255 255 255);
+  --md-sys-color-error-container: rgb(255 218 214);
+  --md-sys-color-on-error-container: rgb(147 0 10);
+  --md-sys-color-background: rgb(251 248 255);
+  --md-sys-color-on-background: rgb(27 27 33);
+  --md-sys-color-surface: rgb(251 248 255);
+  --md-sys-color-on-surface: rgb(27 27 33);
+  --md-sys-color-surface-variant: rgb(227 225 236);
+  --md-sys-color-on-surface-variant: rgb(69 70 79);
+  --md-sys-color-outline: rgb(118 118 128);
+  --md-sys-color-outline-variant: rgb(198 197 208);
+  --md-sys-color-shadow: rgb(0 0 0);
+  --md-sys-color-scrim: rgb(0 0 0);
+  --md-sys-color-inverse-surface: rgb(48 48 54);
+  --md-sys-color-inverse-on-surface: rgb(242 240 247);
+  --md-sys-color-inverse-primary: rgb(185 195 255);
+  --md-sys-color-primary-fixed: rgb(221 225 255);
+  --md-sys-color-on-primary-fixed: rgb(8 22 75);
+  --md-sys-color-primary-fixed-dim: rgb(185 195 255);
+  --md-sys-color-on-primary-fixed-variant: rgb(56 67 121);
+  --md-sys-color-secondary-fixed: rgb(223 225 249);
+  --md-sys-color-on-secondary-fixed: rgb(23 27 44);
+  --md-sys-color-secondary-fixed-dim: rgb(195 197 221);
+  --md-sys-color-on-secondary-fixed-variant: rgb(66 70 89);
+  --md-sys-color-tertiary-fixed: rgb(255 215 243);
+  --md-sys-color-on-tertiary-fixed: rgb(45 18 40);
+  --md-sys-color-tertiary-fixed-dim: rgb(229 186 216);
+  --md-sys-color-on-tertiary-fixed-variant: rgb(92 60 85);
+  --md-sys-color-surface-dim: rgb(219 217 224);
+  --md-sys-color-surface-bright: rgb(251 248 255);
+  --md-sys-color-surface-container-lowest: rgb(255 255 255);
+  --md-sys-color-surface-container-low: rgb(245 242 250);
+  --md-sys-color-surface-container: rgb(239 237 244);
+  --md-sys-color-surface-container-high: rgb(233 231 239);
+  --md-sys-color-surface-container-highest: rgb(227 225 233);
+  --md-extended-color-custom-color1-color: rgb(64 104 54);
+  --md-extended-color-custom-color1-on-color: rgb(255 255 255);
+  --md-extended-color-custom-color1-color-container: rgb(193 239 175);
+  --md-extended-color-custom-color1-on-color-container: rgb(41 80 32);
 
-  --color-court: #0b3d2e;
-  --color-accent: #ffd23f;
+  /* ── Tailwind aliases ── */
+  --color-primary: var(--md-sys-color-primary);
+  --color-on-primary: var(--md-sys-color-on-primary);
+  --color-primary-container: var(--md-sys-color-primary-container);
+  --color-on-primary-container: var(--md-sys-color-on-primary-container);
+  --color-secondary: var(--md-sys-color-secondary);
+  --color-on-secondary: var(--md-sys-color-on-secondary);
+  --color-secondary-container: var(--md-sys-color-secondary-container);
+  --color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --color-tertiary: var(--md-sys-color-tertiary);
+  --color-on-tertiary: var(--md-sys-color-on-tertiary);
+  --color-tertiary-container: var(--md-sys-color-tertiary-container);
+  --color-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --color-error: var(--md-sys-color-error);
+  --color-on-error: var(--md-sys-color-on-error);
+  --color-error-container: var(--md-sys-color-error-container);
+  --color-on-error-container: var(--md-sys-color-on-error-container);
+  --color-background: var(--md-sys-color-background);
+  --color-on-background: var(--md-sys-color-on-background);
+  --color-surface: var(--md-sys-color-surface);
+  --color-on-surface: var(--md-sys-color-on-surface);
+  --color-surface-variant: var(--md-sys-color-surface-variant);
+  --color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --color-outline: var(--md-sys-color-outline);
+  --color-outline-variant: var(--md-sys-color-outline-variant);
+  --color-inverse-surface: var(--md-sys-color-inverse-surface);
+  --color-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+  --color-inverse-primary: var(--md-sys-color-inverse-primary);
+  --color-surface-container-lowest: var(--md-sys-color-surface-container-lowest);
+  --color-surface-container-low: var(--md-sys-color-surface-container-low);
+  --color-surface-container: var(--md-sys-color-surface-container);
+  --color-surface-container-high: var(--md-sys-color-surface-container-high);
+  --color-surface-container-highest: var(--md-sys-color-surface-container-highest);
+  --color-surface-dim: var(--md-sys-color-surface-dim);
+  --color-surface-bright: var(--md-sys-color-surface-bright);
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Roboto', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 html,
@@ -32,13 +104,31 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-brand-50);
-  color: #0f172a;
-  -webkit-font-smoothing: antialiased;
+  background: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
-/* Thin custom scrollbar for table-heavy pages */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-brand-300) transparent;
+  scrollbar-color: var(--md-sys-color-outline-variant) transparent;
+}
+
+/* ── Material Symbols Rounded (hollow / FILL=0) ── */
+.icon {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25em;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  user-select: none;
 }
