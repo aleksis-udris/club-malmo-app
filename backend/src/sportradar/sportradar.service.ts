@@ -50,9 +50,6 @@ const A3: Record<string, string> = {
   POR: 'PT', GRE: 'GR', RSA: 'ZA', NGR: 'NG', MAS: 'MY', KSA: 'SA', UAE: 'AE',
   CRO: 'HR', SLO: 'SI', BUL: 'BG', LAT: 'LV', CHI: 'CL', DEN: 'DK', POL2: 'PL',
 }
-const NEAR_SWEDEN = new Set([
-  'SE', 'NO', 'DK', 'FI', 'IS', 'EE', 'LV', 'LT', 'PL', 'DE', 'NL',
-])
 // 2 = Sweden, 1 = nearby Nordic/Baltic, 0 = elsewhere.
 function regionPriority(code?: string | null, text?: string | null): number {
   const cc = (code ?? '').toUpperCase()
@@ -106,24 +103,6 @@ const NEAR_SWEDEN = new Set([
   "LT",
   "LTU",
 ]);
-function regionPriority(code?: string | null, text?: string): number {
-  const cc = (code ?? "").toUpperCase();
-  const t = (text ?? "").toLowerCase();
-  if (
-    cc === "SE" ||
-    cc === "SWE" ||
-    /sweden|malm|stockholm|gothenburg|g[oö]teborg/.test(t)
-  )
-    return 2;
-  if (
-    NEAR_SWEDEN.has(cc) ||
-    /denmark|copenhagen|norway|oslo|finland|helsinki|iceland|nordic|scandinavian|baltic/.test(
-      t,
-    )
-  )
-    return 1;
-  return 0;
-}
 
 /**
  * Sportradar Squash **v2** integration. Syncs schedules, live summaries, season
