@@ -1,23 +1,44 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import SectionCard from '@/components/SectionCard.vue'
 import StateBlock from '@/components/StateBlock.vue'
 import AppFooter from '@/components/AppFooter.vue'
+import CountryFlag from '@/components/CountryFlag.vue'
 import { useApi } from '@/composables/useApi'
 import type { Player } from '@/types'
 
 interface SwedenData {
   men: Player[]
   women: Player[]
+  sweden: Player[]
+  countries?: Record<string, number>
 }
 
 const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
 
+// Sweden-only table (computed by the backend) goes first; then full lists.
+const sections = computed(() => {
+  if (!data.value) return []
+  const base = [
+    { key: 'men', label: 'Players', players: data.value.men },
+    { key: 'women', label: "Women's draw", players: data.value.women },
+  ].filter((s) => s.players.length)
+  const swe = data.value.sweden?.length
+    ? [{ key: 'sweden', label: '🇸🇪 Sweden players', players: data.value.sweden }]
+    : []
+  return [...swe, ...base]
+})
+
 const initials = (name: string) =>
   name
-    .split(' ')
+    .split(/[ ,]+/)
     .map((p) => p[0])
     .join('')
     .slice(0, 2)
+    .toUpperCase()
+
+const sexLabel = (g?: string | null) =>
+  g ? (g.toLowerCase() === 'female' ? 'Women' : 'Men') : ''
 </script>
 
 <template>
@@ -37,7 +58,13 @@ const initials = (name: string) =>
       </button>
     </StateBlock>
 
-    <div v-else-if="data" class="grid gap-6 lg:grid-cols-2">
+    <StateBlock
+      v-else-if="!sections.length"
+      type="empty"
+      message="No players have been synced yet for the current season."
+    />
+
+    <div v-else class="space-y-6">
       <SectionCard
         v-for="squad in [
           { key: 'men', label: 'Men', icon: '<span class="icon" aria-hidden="true">man</span>', players: data.men },

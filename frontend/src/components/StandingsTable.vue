@@ -35,7 +35,7 @@ withDefaults(
           class="border-t border-primary-container transition hover:bg-primary-container/60"
           :class="row.country.code === highlight ? 'bg-primary-400/15' : ''"
         >
-          <td class="px-3 py-3">
+          <td class="px-2.5 py-3">
             <span
               class="grid h-6 w-6 place-items-center rounded-full text-xs font-bold"
               :class="

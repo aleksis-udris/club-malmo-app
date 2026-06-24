@@ -53,6 +53,7 @@ export class SportradarClient {
       const etag = await this.cache.get(`sr:etag:${key}`)
       const apiKey = this.config.get<string>('sportradar.apiKey')
 
+      let lastStatus: number | undefined
       for (let attempt = 0; attempt < 4; attempt++) {
         try {
           const res = await this.http.get<T>(path, {
@@ -80,9 +81,9 @@ export class SportradarClient {
           await this.cache.set(`sr:hash:${key}`, hash)
           return { data: res.data, source: 'origin', changed: hash !== prevHash }
         } catch (err: any) {
-          const status = err?.response?.status
-          if (status === 429 || status >= 500 || !status) {
-            const backoff = Math.min(2000, 250 * 2 ** attempt) + Math.floor(Math.random() * 100)
+          lastStatus = err?.response?.status
+          if (lastStatus === 429 || (lastStatus ?? 500) >= 500 || !lastStatus) {
+            const backoff = Math.min(3000, 400 * 2 ** attempt) + Math.floor(Math.random() * 150)
             await new Promise((r) => setTimeout(r, backoff))
             continue
           }
@@ -90,9 +91,14 @@ export class SportradarClient {
         }
       }
 
-      if (++this.failures >= 5) {
-        this.breakerOpenUntil = Date.now() + 30_000
-        this.log.warn('Sportradar circuit breaker OPEN for 30s')
+      // Pure rate limiting (429) should NOT trip the breaker (it would starve other
+      // endpoints in the same sync) — just serve cached and move on. Only real
+      // outages (5xx / network) open it, and only briefly.
+      if (lastStatus !== 429) {
+        if (++this.failures >= 5) {
+          this.breakerOpenUntil = Date.now() + 10_000
+          this.log.warn('Sportradar circuit breaker OPEN for 10s')
+        }
       }
       const cached = await this.cache.getJSON<T>(`sr:data:${key}`)
       return { data: cached, source: 'breaker-open', changed: false }

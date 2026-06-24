@@ -11,6 +11,12 @@ export class SportradarController {
     return this.sr.status()
   }
 
+  // Debug: force a full sync now and return per-endpoint counts/errors.
+  @Get('sync')
+  sync() {
+    return this.sr.runAll()
+  }
+
   @Get('live')
   live() {
     return this.sr.getLive()

@@ -10,10 +10,11 @@ const routes = [
     component: () => import('@/views/StandingChampionshipView.vue'),
   },
   {
-    path: '/latest',
-    name: 'latest',
-    component: () => import('@/views/LatestChampionshipView.vue'),
+    path: '/calendar',
+    name: 'calendar',
+    component: () => import('@/views/CalendarView.vue'),
   },
+  { path: '/latest', redirect: '/calendar' },
   { path: '/sweden', name: 'sweden', component: () => import('@/views/SwedenView.vue') },
   {
     path: '/players',

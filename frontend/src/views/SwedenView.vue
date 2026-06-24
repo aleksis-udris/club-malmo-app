@@ -51,11 +51,25 @@ const { data, loading, error, retry } = useApi<SwedenData>('/content/sweden')
         />
       </div>
 
-      <SectionCard title="Group standings" subtitle="Sweden's qualification group">
-        <StandingsTable :rows="data.groupStandings" highlight="SWE" />
+      <SectionCard
+        v-if="data.groupStandings.length"
+        title="Season standings"
+        subtitle="Top 8 by results"
+      >
+        <StandingsTable :rows="data.groupStandings" />
       </SectionCard>
+      <StateBlock
+        v-else
+        type="empty"
+        message="No standings available for the current season yet."
+      />
 
-      <SectionCard title="Overall statistics" subtitle="Across 7 matches">
+      <!-- Only shown if the feed provides an aggregate stats breakdown -->
+      <SectionCard
+        v-if="data.overallStats.length"
+        title="Overall statistics"
+        subtitle="Aggregate"
+      >
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-sm">
             <thead>
