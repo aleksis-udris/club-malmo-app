@@ -10,7 +10,7 @@ interface Meta {
 const { data, loading, error } = useApi<Meta>('/content/meta')
 
 const state = computed(() => {
-  if (loading.value) return { label: 'Connecting…', cls: 'bg-slate-100 text-slate-500', dot: 'bg-slate-400' }
+  if (loading.value) return { label: 'Connecting…', cls: 'bg-surface-container text-on-surface-variant', dot: 'bg-outline' }
   if (error.value) return { label: 'API offline', cls: 'bg-rose-100 text-rose-700', dot: 'bg-rose-500' }
   if (data.value?.source === 'sportradar')
     return { label: 'Live · Sportradar v2', cls: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' }

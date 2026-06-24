@@ -23,14 +23,14 @@ const initials = (name: string) =>
 <template>
   <div class="space-y-5">
     <div>
-      <h1 class="text-2xl font-extrabold text-slate-800">Sweden Club Players</h1>
-      <p class="text-sm text-slate-400">Men's and women's squads · matches played</p>
+      <h1 class="text-2xl font-extrabold text-on-surface">Sweden Club Players</h1>
+      <p class="text-sm text-outline">Men's and women's squads · matches played</p>
     </div>
 
     <StateBlock v-if="loading" type="loading" />
     <StateBlock v-else-if="error" type="error" :message="error">
       <button
-        class="mt-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+        class="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
         @click="retry"
       >
         Retry
@@ -40,26 +40,28 @@ const initials = (name: string) =>
     <div v-else-if="data" class="grid gap-6 lg:grid-cols-2">
       <SectionCard
         v-for="squad in [
-          { key: 'men', label: 'Men', icon: '👨', players: data.men },
-          { key: 'women', label: 'Women', icon: '👩', players: data.women },
+          { key: 'men', label: 'Men', icon: '<span class="icon" aria-hidden="true">man</span>', players: data.men },
+          { key: 'women', label: 'Women', icon: '<span class="icon" aria-hidden="true">woman</span>', players: data.women },
         ]"
         :key="squad.key"
         :title="squad.label"
         :subtitle="`${squad.players.length} players`"
       >
-        <ul v-if="squad.players.length" class="divide-y divide-brand-50">
+        <ul v-if="squad.players.length" class="divide-y divide-primary-container">
           <li
-            v-for="(player, i) in (squad.players as Player[])"
+            v-for="(player, i) in squad.players as Player[]"
             :key="player.id"
-            class="flex items-center gap-3 px-3 py-3 transition hover:bg-brand-50/60"
+            class="flex items-center gap-3 px-3 py-3 transition hover:bg-primary-container/60"
           >
-            <span class="w-5 text-sm font-bold text-slate-300">{{ i + 1 }}</span>
+            <span class="w-5 text-sm font-bold text-outline">{{ i + 1 }}</span>
             <span
-              class="grid h-9 w-9 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700"
+              class="grid h-9 w-9 place-items-center rounded-full bg-primary-container text-xs font-bold text-primary"
               >{{ initials(player.name) }}</span
             >
-            <span class="flex-1 font-medium text-slate-700">{{ player.name }}</span>
-            <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
+            <span class="flex-1 font-medium text-on-surface">{{ player.name }}</span>
+            <span
+              class="rounded-full bg-primary-container px-3 py-1 text-xs font-bold text-primary"
+            >
               {{ player.played }} played
             </span>
           </li>

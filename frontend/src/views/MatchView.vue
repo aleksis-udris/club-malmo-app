@@ -43,17 +43,17 @@ const prettyDate = (s: string) =>
   <div class="space-y-5">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-extrabold text-slate-800">Match Overview</h1>
-        <p class="text-sm text-slate-400">U15 &amp; U17 league · pick a date to view its matches</p>
+        <h1 class="text-2xl font-extrabold text-on-surface">Match Overview</h1>
+        <p class="text-sm text-outline">U15 &amp; U17 league · pick a date to view its matches</p>
       </div>
       <label v-if="refDate" class="text-sm">
-        <span class="mb-1 block font-semibold text-slate-600">Date</span>
+        <span class="mb-1 block font-semibold text-on-surface-variant">Date</span>
         <input
           v-model="selected"
           type="date"
           :min="minDate"
           :max="refDate"
-          class="rounded-lg border border-brand-200 bg-white px-3 py-2 font-medium text-slate-700 shadow-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+          class="rounded-lg border border-primary-container bg-surface-container-lowest px-3 py-2 font-medium text-on-surface shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-container"
         />
       </label>
     </div>
@@ -62,7 +62,7 @@ const prettyDate = (s: string) =>
 
     <StateBlock v-else-if="error" type="error" :message="error">
       <button
-        class="mt-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+        class="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
         @click="retry"
       >
         Retry

@@ -22,14 +22,14 @@ function retry() {
 <template>
   <div class="space-y-5">
     <div>
-      <h1 class="text-2xl font-extrabold text-slate-800">Latest Matches — Lower Bracket</h1>
-      <p class="text-sm text-slate-400">ESF championship · positions 9–16</p>
+      <h1 class="text-2xl font-extrabold text-on-surface">Latest Matches — Lower Bracket</h1>
+      <p class="text-sm text-outline">ESF championship · positions 9–16</p>
     </div>
 
     <StateBlock v-if="loading" type="loading" />
     <StateBlock v-else-if="error" type="error" :message="error">
       <button
-        class="mt-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+        class="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
         @click="retry"
       >
         Retry

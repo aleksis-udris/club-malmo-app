@@ -14,7 +14,7 @@ withDefaults(
 const statusStyle: Record<Match['status'], string> = {
   live: 'bg-red-100 text-red-700',
   finished: 'bg-emerald-100 text-emerald-700',
-  upcoming: 'bg-slate-100 text-slate-500',
+  upcoming: 'bg-surface-container text-on-surface-variant',
 }
 
 const statusLabel: Record<Match['status'], string> = {
@@ -28,7 +28,7 @@ const statusLabel: Record<Match['status'], string> = {
   <div class="overflow-x-auto">
     <table class="w-full border-collapse text-sm">
       <thead>
-        <tr class="text-left text-xs uppercase tracking-wider text-slate-400">
+        <tr class="text-left text-xs uppercase tracking-wider text-outline">
           <th class="px-3 py-3 font-semibold">Time</th>
           <th v-if="showDraw" class="px-3 py-3 font-semibold">Draw</th>
           <th class="px-3 py-3 font-semibold">Home</th>
@@ -42,23 +42,23 @@ const statusLabel: Record<Match['status'], string> = {
         <tr
           v-for="match in matches"
           :key="match.id"
-          class="border-t border-brand-50 transition hover:bg-brand-50/60"
+          class="border-t border-primary-container transition hover:bg-primary-container/60"
         >
-          <td class="whitespace-nowrap px-3 py-3 font-semibold tabular-nums text-slate-600">
+          <td class="whitespace-nowrap px-3 py-3 font-semibold tabular-nums text-on-surface-variant">
             {{ match.time }}
           </td>
-          <td v-if="showDraw" class="px-3 py-3 text-slate-500">{{ match.draw }}</td>
+          <td v-if="showDraw" class="px-3 py-3 text-on-surface-variant">{{ match.draw }}</td>
           <td class="px-3 py-3"><CountryFlag :country="match.home" /></td>
           <td class="px-3 py-3 text-center">
             <span
               v-if="match.score"
-              class="inline-block rounded-md bg-brand-50 px-2.5 py-1 font-extrabold tabular-nums text-brand-700"
+              class="inline-block rounded-md bg-primary-container px-2.5 py-1 font-extrabold tabular-nums text-primary"
               >{{ match.score }}</span
             >
-            <span v-else class="text-slate-300">vs</span>
+            <span v-else class="text-outline">vs</span>
           </td>
           <td class="px-3 py-3"><CountryFlag :country="match.away" /></td>
-          <td class="whitespace-nowrap px-3 py-3 text-slate-500">{{ match.court }}</td>
+          <td class="whitespace-nowrap px-3 py-3 text-on-surface-variant">{{ match.court }}</td>
           <td class="px-3 py-3 text-right">
             <span
               class="inline-block rounded-full px-2.5 py-1 text-xs font-bold"

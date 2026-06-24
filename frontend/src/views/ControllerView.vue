@@ -29,9 +29,7 @@ function saveSession(s: Session | null) {
   else localStorage.removeItem(SESSION_KEY)
 }
 
-const court = computed(() =>
-  session.value ? courtHub.getCourt(session.value.courtId) : undefined,
-)
+const court = computed(() => (session.value ? courtHub.getCourt(session.value.courtId) : undefined))
 const authorized = computed(
   () => !!session.value && court.value?.controllerToken === session.value.token,
 )
@@ -123,15 +121,15 @@ function applySetup() {
     <!-- ============ PAIRING SCREEN ============ -->
     <template v-if="!authorized">
       <div>
-        <h1 class="text-xl font-extrabold text-slate-800">Connect to a court</h1>
-        <p class="text-sm text-slate-400">Enter the 6-digit code shown on the court's TV.</p>
+        <h1 class="text-xl font-extrabold text-on-surface">Connect to a court</h1>
+        <p class="text-sm text-outline">Enter the 6-digit code shown on the court's TV.</p>
       </div>
 
       <div
         v-if="revoked"
         class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
       >
-        <span class="text-lg">⚠️</span>
+        <span class="text-lg"><span class="icon" aria-hidden="true">warning</span></span>
         <div class="flex-1">
           <p class="font-semibold">Session ended</p>
           <p class="text-xs">
@@ -141,9 +139,9 @@ function applySetup() {
         <button class="text-xs font-bold underline" @click="dismissRevoked">Dismiss</button>
       </div>
 
-      <div class="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
+      <div class="rounded-2xl border border-primary-container bg-surface-container-lowest p-5 shadow-sm">
         <label class="block text-sm">
-          <span class="font-semibold text-slate-600">Pairing code</span>
+          <span class="font-semibold text-on-surface-variant">Pairing code</span>
           <input
             v-model="codeInput"
             inputmode="numeric"
@@ -153,7 +151,7 @@ function applySetup() {
             :class="
               claimError
                 ? 'border-red-300 focus:ring-red-100'
-                : 'border-brand-200 focus:ring-brand-100'
+                : 'border-primary-container focus:ring-primary-container'
             "
             @input="claimError = null"
             @keyup.enter="connect"
@@ -162,7 +160,7 @@ function applySetup() {
         <p v-if="claimError" class="mt-2 text-xs text-red-500">{{ claimError }}</p>
         <button
           class="mt-4 w-full rounded-xl py-3 font-bold text-white transition active:scale-95"
-          :class="codeInput.trim().length === 6 ? 'bg-brand-600' : 'cursor-not-allowed bg-slate-300'"
+          :class="codeInput.trim().length === 6 ? 'bg-primary' : 'cursor-not-allowed bg-surface-container-high'"
           :disabled="codeInput.trim().length !== 6"
           @click="connect"
         >
@@ -170,7 +168,7 @@ function applySetup() {
         </button>
       </div>
 
-      <p class="rounded-xl bg-brand-50 px-4 py-3 text-xs text-brand-700">
+      <p class="rounded-xl bg-primary-container px-4 py-3 text-xs text-primary">
         No code? Open a court's TV from the
         <RouterLink to="/courts" class="font-bold underline">Courts</RouterLink>
         page — each TV shows its own pairing code.
@@ -181,20 +179,20 @@ function applySetup() {
     <template v-else-if="court && board">
       <header class="flex items-center justify-between">
         <div>
-          <h1 class="text-xl font-extrabold text-slate-800">
+          <h1 class="text-xl font-extrabold text-on-surface">
             {{ court.name }}
             <span class="ml-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">
               {{ court.status }}
             </span>
           </h1>
-          <p class="text-sm text-slate-400">{{ board.draw || 'No draw set' }}</p>
+          <p class="text-sm text-outline">{{ board.draw || 'No draw set' }}</p>
         </div>
         <RouterLink
           :to="`/tv/${court.id}`"
           target="_blank"
-          class="rounded-xl bg-court px-3 py-2 text-xs font-bold text-white"
+          class="rounded-xl bg-success px-3 py-2 text-xs font-bold text-white"
         >
-          📺 Open TV ↗
+          <span class="icon" aria-hidden="true">tv</span> Open TV ↗
         </RouterLink>
       </header>
 
@@ -203,25 +201,25 @@ function applySetup() {
         <div
           v-for="side in sides"
           :key="side.key"
-          class="rounded-2xl border-2 bg-white p-4 text-center shadow-sm transition"
-          :class="board.serving === side.key ? 'border-accent' : 'border-brand-100'"
+          class="rounded-2xl border-2 bg-surface-container-lowest p-4 text-center shadow-sm transition"
+          :class="board.serving === side.key ? 'border-primary-400' : 'border-primary-container'"
         >
-          <p class="truncate font-bold text-slate-800">{{ board[side.key].name }}</p>
-          <p class="text-xs text-slate-400">{{ board[`${side.key}Games`] }} games won</p>
+          <p class="truncate font-bold text-on-surface">{{ board[side.key].name }}</p>
+          <p class="text-xs text-outline">{{ board[`${side.key}Games`] }} games won</p>
 
-          <div class="my-3 text-6xl font-black tabular-nums text-brand-700">
+          <div class="my-3 text-6xl font-black tabular-nums text-primary">
             {{ board[`${side.key}Points`] }}
           </div>
 
           <button
-            class="w-full rounded-xl bg-brand-600 py-3 text-lg font-extrabold text-white transition active:scale-95"
+            class="w-full rounded-xl bg-primary py-3 text-lg font-extrabold text-white transition active:scale-95"
             @click="addPoint(side.key)"
           >
             + Point
           </button>
           <div class="mt-2 grid grid-cols-2 gap-2">
             <button
-              class="rounded-lg bg-slate-100 py-2 text-sm font-bold text-slate-600 active:scale-95"
+              class="rounded-lg bg-surface-container py-2 text-sm font-bold text-on-surface-variant active:scale-95"
               @click="removePoint(side.key)"
             >
               − 1
@@ -242,34 +240,34 @@ function applySetup() {
       <!-- Match controls -->
       <div class="grid grid-cols-2 gap-2">
         <button
-          class="rounded-xl bg-white py-3 text-sm font-bold text-slate-700 shadow-sm active:scale-95"
+          class="rounded-xl bg-surface-container-lowest py-3 text-sm font-bold text-on-surface shadow-sm active:scale-95"
           @click="toggleServe"
         >
-          🔁 Serve
+          <span class="icon" aria-hidden="true">swap_horiz</span> Serve
         </button>
         <button
-          class="rounded-xl bg-white py-3 text-sm font-bold text-slate-700 shadow-sm active:scale-95"
+          class="rounded-xl bg-surface-container-lowest py-3 text-sm font-bold text-on-surface shadow-sm active:scale-95"
           @click="nextGame"
         >
-          ⏭️ Next game
+          <span class="icon" aria-hidden="true">skip_next</span> Next game
         </button>
       </div>
 
       <button
-        class="w-full rounded-xl border border-brand-200 bg-white py-3 text-sm font-bold text-brand-700 active:scale-95"
+        class="w-full rounded-xl border border-primary-container bg-surface-container-lowest py-3 text-sm font-bold text-primary active:scale-95"
         @click="openSetup"
       >
-        ⚙️ {{ showSetup ? 'Close setup' : 'Set up match' }}
+        <span class="icon" aria-hidden="true">settings</span> {{ showSetup ? 'Close setup' : 'Set up match' }}
       </button>
 
       <!-- Setup panel: manual team names -->
       <Transition name="fade">
         <div
           v-if="showSetup"
-          class="space-y-3 rounded-2xl border border-brand-100 bg-white p-4 shadow-sm"
+          class="space-y-3 rounded-2xl border border-primary-container bg-surface-container-lowest p-4 shadow-sm"
         >
           <label class="block text-sm">
-            <span class="font-semibold text-slate-600">Home team</span>
+            <span class="font-semibold text-on-surface-variant">Home team</span>
             <input
               v-model="homeName"
               type="text"
@@ -279,7 +277,7 @@ function applySetup() {
               :class="
                 homeInvalid
                   ? 'border-red-300 focus:ring-red-100'
-                  : 'border-brand-200 focus:ring-brand-100'
+                  : 'border-primary-container focus:ring-primary-container'
               "
             />
             <span v-if="homeInvalid" class="mt-1 block text-xs text-red-500">
@@ -288,7 +286,7 @@ function applySetup() {
           </label>
 
           <label class="block text-sm">
-            <span class="font-semibold text-slate-600">Away team</span>
+            <span class="font-semibold text-on-surface-variant">Away team</span>
             <input
               v-model="awayName"
               type="text"
@@ -298,7 +296,7 @@ function applySetup() {
               :class="
                 awayInvalid
                   ? 'border-red-300 focus:ring-red-100'
-                  : 'border-brand-200 focus:ring-brand-100'
+                  : 'border-primary-container focus:ring-primary-container'
               "
             />
             <span v-if="awayInvalid" class="mt-1 block text-xs text-red-500">
@@ -307,18 +305,18 @@ function applySetup() {
           </label>
 
           <label class="block text-sm">
-            <span class="font-semibold text-slate-600">Draw / pool</span>
+            <span class="font-semibold text-on-surface-variant">Draw / pool</span>
             <input
               v-model="drawLabel"
               type="text"
               placeholder="e.g. U17 Open A"
-              class="mt-1 w-full rounded-lg border border-brand-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-100"
+              class="mt-1 w-full rounded-lg border border-primary-container px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-container"
             />
           </label>
 
           <button
             class="w-full rounded-xl py-3 font-bold text-white transition active:scale-95"
-            :class="canStart ? 'bg-brand-600' : 'cursor-not-allowed bg-slate-300'"
+            :class="canStart ? 'bg-primary' : 'cursor-not-allowed bg-surface-container-high'"
             :disabled="!canStart"
             @click="applySetup"
           >
@@ -328,7 +326,7 @@ function applySetup() {
       </Transition>
 
       <button
-        class="w-full rounded-xl border border-rose-200 bg-white py-3 text-sm font-bold text-rose-600 active:scale-95"
+        class="w-full rounded-xl border border-rose-200 bg-surface-container-lowest py-3 text-sm font-bold text-rose-600 active:scale-95"
         @click="disconnect"
       >
         Disconnect from {{ court.name }}

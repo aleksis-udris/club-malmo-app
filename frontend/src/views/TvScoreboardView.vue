@@ -36,7 +36,7 @@ const winnerName = computed(() => {
     <!-- Court not found -->
     <div v-if="!court" class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
       <p class="text-2xl font-bold">Court not found</p>
-      <RouterLink to="/courts" class="rounded-xl bg-white/15 px-4 py-2 text-sm font-bold">
+      <RouterLink to="/courts" class="rounded-xl bg-surface-container-lowest/15 px-4 py-2 text-sm font-bold">
         ← Back to courts
       </RouterLink>
     </div>
@@ -45,7 +45,7 @@ const winnerName = computed(() => {
       <!-- Header -->
       <div class="flex items-center justify-between px-6 py-4 sm:px-10">
         <div class="flex items-center gap-3">
-          <span class="text-2xl">🟢</span>
+          <span class="text-2xl"><span class="icon" aria-hidden="true">circle</span></span>
           <div class="leading-tight">
             <p class="text-sm font-bold sm:text-base">
               {{ court.name }}<span v-if="board?.draw"> · {{ board.draw }}</span>
@@ -58,9 +58,9 @@ const winnerName = computed(() => {
             v-if="court.status === 'LIVE'"
             class="flex items-center gap-2 rounded-full bg-red-600 px-3 py-1 text-xs font-bold"
           >
-            <span class="h-2 w-2 animate-pulse rounded-full bg-white" /> LIVE
+            <span class="h-2 w-2 animate-pulse rounded-full bg-surface-container-lowest" /> LIVE
           </span>
-          <span v-else class="rounded-full bg-white/10 px-3 py-1 text-xs font-bold">
+          <span v-else class="rounded-full bg-surface-container-lowest/10 px-3 py-1 text-xs font-bold">
             {{ court.status }}
           </span>
           <RouterLink to="/courts" class="text-xs text-emerald-300/70 hover:text-white">
@@ -75,7 +75,7 @@ const winnerName = computed(() => {
         class="flex flex-1 flex-col items-center justify-center px-4 py-8 text-center"
       >
         <p v-if="winnerName" class="mb-6 text-2xl font-black text-accent sm:text-3xl">
-          🏆 {{ winnerName }} wins the match!
+          <span class="icon" aria-hidden="true">emoji_events</span> {{ winnerName }} wins the match!
         </p>
 
         <p class="text-sm uppercase tracking-[0.3em] text-emerald-300/70">Pair your device</p>
@@ -84,7 +84,7 @@ const winnerName = computed(() => {
         </p>
 
         <div
-          class="mt-8 rounded-3xl border-2 border-white/15 bg-white/5 px-10 py-8 sm:px-16 sm:py-10"
+          class="mt-8 rounded-3xl border-2 border-white/15 bg-surface-container-lowest/5 px-10 py-8 sm:px-16 sm:py-10"
         >
           <p class="font-mono text-6xl font-black tracking-[0.35em] sm:text-8xl">
             {{ court.code }}
@@ -105,7 +105,7 @@ const winnerName = computed(() => {
           <!-- Home -->
           <div
             class="rounded-3xl border-2 p-6 text-center transition sm:p-10"
-            :class="board.serving === 'home' ? 'border-accent bg-white/5' : 'border-white/10'"
+            :class="board.serving === 'home' ? 'border-primary-400 bg-surface-container-lowest/5' : 'border-white/10'"
           >
             <div class="text-6xl sm:text-8xl" aria-hidden="true">{{ board.home.flag }}</div>
             <p class="mt-2 text-xl font-bold sm:text-3xl">{{ board.home.name }}</p>
@@ -134,7 +134,7 @@ const winnerName = computed(() => {
           <!-- Away -->
           <div
             class="rounded-3xl border-2 p-6 text-center transition sm:p-10"
-            :class="board.serving === 'away' ? 'border-accent bg-white/5' : 'border-white/10'"
+            :class="board.serving === 'away' ? 'border-primary-400 bg-surface-container-lowest/5' : 'border-white/10'"
           >
             <div class="text-6xl sm:text-8xl" aria-hidden="true">{{ board.away.flag }}</div>
             <p class="mt-2 text-xl font-bold sm:text-3xl">{{ board.away.name }}</p>

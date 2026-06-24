@@ -12,9 +12,9 @@ const timer = window.setInterval(() => (nowTs.value = Date.now()), 1000)
 onBeforeUnmount(() => window.clearInterval(timer))
 
 const statusStyle: Record<CourtStatus, string> = {
-  OFFLINE: 'bg-slate-100 text-slate-500',
-  IDLE: 'bg-slate-100 text-slate-600',
-  PAIRED: 'bg-brand-100 text-brand-700',
+  OFFLINE: 'bg-surface-container text-on-surface-variant',
+  IDLE: 'bg-surface-container text-on-surface-variant',
+  PAIRED: 'bg-primary-container text-primary',
   LIVE: 'bg-red-100 text-red-700',
   FINISHED: 'bg-amber-100 text-amber-700',
 }
@@ -30,8 +30,8 @@ function countdown(expiresAt: number): string {
 <template>
   <div class="space-y-5">
     <div>
-      <h1 class="text-2xl font-extrabold text-slate-800">Courts</h1>
-      <p class="text-sm text-slate-400">
+      <h1 class="text-2xl font-extrabold text-on-surface">Courts</h1>
+      <p class="text-sm text-outline">
         Live status of all 6 courts · open a TV display or pair a controller
       </p>
     </div>
@@ -40,10 +40,10 @@ function countdown(expiresAt: number): string {
       <div
         v-for="court in courts"
         :key="court.id"
-        class="flex flex-col rounded-2xl border border-brand-100 bg-white p-5 shadow-sm"
+        class="flex flex-col rounded-2xl border border-primary-container bg-surface-container-lowest p-5 shadow-sm"
       >
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-extrabold text-slate-800">{{ court.name }}</h2>
+          <h2 class="text-lg font-extrabold text-on-surface">{{ court.name }}</h2>
           <span
             class="rounded-full px-2.5 py-1 text-xs font-bold"
             :class="statusStyle[court.status]"
@@ -52,25 +52,25 @@ function countdown(expiresAt: number): string {
           </span>
         </div>
 
-        <div v-if="court.status === 'LIVE'" class="mt-4 rounded-xl bg-court/5 p-4 text-center">
-          <p class="text-xs uppercase tracking-wider text-slate-400">Live score</p>
-          <p class="mt-1 truncate text-sm font-semibold text-slate-700">
+        <div v-if="court.status === 'LIVE'" class="mt-4 rounded-xl bg-success/5 p-4 text-center">
+          <p class="text-xs uppercase tracking-wider text-outline">Live score</p>
+          <p class="mt-1 truncate text-sm font-semibold text-on-surface">
             {{ court.board.home.name }} vs {{ court.board.away.name }}
           </p>
-          <p class="mt-1 text-3xl font-black tabular-nums text-brand-700">
+          <p class="mt-1 text-3xl font-black tabular-nums text-primary">
             {{ court.board.homePoints }} – {{ court.board.awayPoints }}
           </p>
-          <p class="text-xs text-slate-400">
+          <p class="text-xs text-outline">
             games {{ court.board.homeGames }}–{{ court.board.awayGames }} · code hidden during play
           </p>
         </div>
 
-        <div v-else class="mt-4 rounded-xl bg-brand-50 p-4 text-center">
-          <p class="text-xs uppercase tracking-wider text-slate-400">Pairing code</p>
-          <p class="mt-1 font-mono text-3xl font-black tracking-[0.3em] text-brand-700">
+        <div v-else class="mt-4 rounded-xl bg-primary-container p-4 text-center">
+          <p class="text-xs uppercase tracking-wider text-outline">Pairing code</p>
+          <p class="mt-1 font-mono text-3xl font-black tracking-[0.3em] text-primary">
             {{ court.code }}
           </p>
-          <p class="mt-1 text-xs text-slate-400">
+          <p class="mt-1 text-xs text-outline">
             regenerates in {{ countdown(court.codeExpiresAt) }}
             <template v-if="court.controllerToken"> · controller connected</template>
           </p>
@@ -79,29 +79,29 @@ function countdown(expiresAt: number): string {
         <div class="mt-4 flex flex-wrap gap-2">
           <RouterLink
             :to="`/tv/${court.id}`"
-            class="flex-1 rounded-lg bg-court px-3 py-2 text-center text-xs font-bold text-white"
+            class="flex-1 rounded-lg bg-success px-3 py-2 text-center text-xs font-bold text-white"
           >
-            📺 Open TV
+            <span class="icon" aria-hidden="true">tv</span> Open TV
           </RouterLink>
           <button
-            class="rounded-lg border border-brand-200 px-3 py-2 text-xs font-bold text-brand-700 transition hover:bg-brand-50"
+            class="rounded-lg border border-primary-container px-3 py-2 text-xs font-bold text-primary transition hover:bg-primary-container"
             :disabled="court.status === 'LIVE'"
             :class="court.status === 'LIVE' ? 'cursor-not-allowed opacity-40' : ''"
             @click="rotateCode(court.id)"
           >
-            🔄 New code
+            <span class="icon" aria-hidden="true">refresh</span> New code
           </button>
           <button
             class="rounded-lg border border-rose-200 px-3 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-50"
             @click="resetCourt(court.id)"
           >
-            ♻️ Reset
+            <span class="icon" aria-hidden="true">restart_alt</span> Reset
           </button>
         </div>
       </div>
     </div>
 
-    <p class="rounded-xl bg-brand-50 px-4 py-3 text-xs text-brand-700">
+    <p class="rounded-xl bg-primary-container px-4 py-3 text-xs text-primary">
       Tip: open a court's TV on one screen and the
       <RouterLink to="/controller" class="font-bold underline">Controller</RouterLink>
       on a phone, then enter the code shown on the TV to pair.
