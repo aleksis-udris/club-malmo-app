@@ -1,13 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { SportradarClient } from './sportradar.client'
-import { SrEvent } from './entities/sr-event.entity'
-import { SrRanking } from './entities/sr-ranking.entity'
-import { SrStanding } from './entities/sr-standing.entity'
-import { SrCompetitor } from './entities/sr-competitor.entity'
-import { SrCalendarEvent } from './entities/sr-calendar.entity'
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { SportradarClient } from "./sportradar.client";
+import { SrEvent } from "./entities/sr-event.entity";
+import { SrRanking } from "./entities/sr-ranking.entity";
+import { SrStanding } from "./entities/sr-standing.entity";
+import { SrCompetitor } from "./entities/sr-competitor.entity";
+import { SrCalendarEvent } from "./entities/sr-calendar.entity";
 
 function ymd(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -76,6 +76,55 @@ const country = (name: string, code?: string | null) => ({
   flag: flag(code),
 });
 
+// Surfacing priority: Sweden/Malmö first (2), then nearby Nordic + Baltic
+// neighbours (1), then everything else (0).
+const NEAR_SWEDEN = new Set([
+  "SE",
+  "SWE",
+  "DK",
+  "DEN",
+  "DNK",
+  "NO",
+  "NOR",
+  "FI",
+  "FIN",
+  "IS",
+  "ISL",
+  "DE",
+  "GER",
+  "DEU",
+  "PL",
+  "POL",
+  "NL",
+  "NED",
+  "NLD",
+  "EE",
+  "EST",
+  "LV",
+  "LAT",
+  "LVA",
+  "LT",
+  "LTU",
+]);
+function regionPriority(code?: string | null, text?: string): number {
+  const cc = (code ?? "").toUpperCase();
+  const t = (text ?? "").toLowerCase();
+  if (
+    cc === "SE" ||
+    cc === "SWE" ||
+    /sweden|malm|stockholm|gothenburg|g[oö]teborg/.test(t)
+  )
+    return 2;
+  if (
+    NEAR_SWEDEN.has(cc) ||
+    /denmark|copenhagen|norway|oslo|finland|helsinki|iceland|nordic|scandinavian|baltic/.test(
+      t,
+    )
+  )
+    return 1;
+  return 0;
+}
+
 /**
  * Sportradar Squash **v2** integration. Syncs schedules, live summaries, season
  * standings, competitors and rankings into the local mirror, and exposes read
@@ -90,17 +139,21 @@ export class SportradarService {
     private readonly client: SportradarClient,
     private readonly config: ConfigService,
     @InjectRepository(SrEvent) private readonly events: Repository<SrEvent>,
-    @InjectRepository(SrRanking) private readonly rankings: Repository<SrRanking>,
-    @InjectRepository(SrStanding) private readonly standings: Repository<SrStanding>,
-    @InjectRepository(SrCompetitor) private readonly competitors: Repository<SrCompetitor>,
-    @InjectRepository(SrCalendarEvent) private readonly calendar: Repository<SrCalendarEvent>,
+    @InjectRepository(SrRanking)
+    private readonly rankings: Repository<SrRanking>,
+    @InjectRepository(SrStanding)
+    private readonly standings: Repository<SrStanding>,
+    @InjectRepository(SrCompetitor)
+    private readonly competitors: Repository<SrCompetitor>,
+    @InjectRepository(SrCalendarEvent)
+    private readonly calendar: Repository<SrCalendarEvent>,
   ) {}
 
   get enabled(): boolean {
     return !!this.config.get("sportradar.enabled");
   }
-  private cachedSeasonId: string | null = null
-  private seasonsCache: any[] | null = null
+  private cachedSeasonId: string | null = null;
+  private seasonsCache: any[] | null = null;
 
   /**
    * Season list, newest first. Squash v2 documents seasons PER competition
@@ -109,32 +162,41 @@ export class SportradarService {
    * degrades to [] on failure — callers then derive seasons from synced matches.
    */
   private async listSeasons(): Promise<any[]> {
-    if (this.seasonsCache) return this.seasonsCache
-    const competitionId = this.config.get<string>('sportradar.competitionId') ?? ''
-    const path = competitionId ? `/competitions/${competitionId}/seasons.json` : `/seasons.json`
+    if (this.seasonsCache) return this.seasonsCache;
+    const competitionId =
+      this.config.get<string>("sportradar.competitionId") ?? "";
+    const path = competitionId
+      ? `/competitions/${competitionId}/seasons.json`
+      : `/seasons.json`;
     try {
-      const res = await this.client.get<any>('seasons:list', path, 86400)
-      const seasons: any[] = (res.data?.seasons ?? []).slice()
+      const res = await this.client.get<any>("seasons:list", path, 86400);
+      const seasons: any[] = (res.data?.seasons ?? []).slice();
       seasons.sort(
         (a: any, b: any) =>
-          new Date(b.start_date ?? 0).getTime() - new Date(a.start_date ?? 0).getTime(),
-      )
-      this.seasonsCache = seasons
-      return seasons
+          new Date(b.start_date ?? 0).getTime() -
+          new Date(a.start_date ?? 0).getTime(),
+      );
+      this.seasonsCache = seasons;
+      return seasons;
     } catch (e: any) {
-      this.log.debug(`listSeasons (${path}) unavailable: ${e?.response?.status ?? e?.message}`)
-      this.seasonsCache = []
-      return []
+      this.log.debug(
+        `listSeasons (${path}) unavailable: ${e?.response?.status ?? e?.message}`,
+      );
+      this.seasonsCache = [];
+      return [];
     }
   }
 
   /** Distinct seasons extracted from already-synced matches (sport_event_context). */
   private async seasonsFromMatches(): Promise<any[]> {
-    const events = await this.events.find({ order: { scheduled: 'DESC' }, take: 500 })
-    const map = new Map<string, any>()
+    const events = await this.events.find({
+      order: { scheduled: "DESC" },
+      take: 500,
+    });
+    const map = new Map<string, any>();
     for (const e of events) {
-      const ctx = (e.payload as any)?.sport_event?.sport_event_context ?? {}
-      const se = ctx.season
+      const ctx = (e.payload as any)?.sport_event?.sport_event_context ?? {};
+      const se = ctx.season;
       if (se?.id && !map.has(se.id)) {
         map.set(se.id, {
           id: se.id,
@@ -144,10 +206,10 @@ export class SportradarService {
           competition_id: ctx.competition?.id ?? se.competition_id ?? null,
           competition: ctx.competition ?? null,
           venue: (e.payload as any)?.sport_event?.venue ?? null,
-        })
+        });
       }
     }
-    return [...map.values()]
+    return [...map.values()];
   }
 
   /**
@@ -155,35 +217,39 @@ export class SportradarService {
    * (or the most recent). Falls back to the season carried by a recent match.
    */
   async resolveSeasonId(): Promise<string> {
-    const configured = this.config.get<string>('sportradar.seasonId') ?? ''
-    if (configured) return configured
-    if (this.cachedSeasonId) return this.cachedSeasonId
-    const seasons = await this.listSeasons()
-    const now = Date.now()
+    const configured = this.config.get<string>("sportradar.seasonId") ?? "";
+    if (configured) return configured;
+    if (this.cachedSeasonId) return this.cachedSeasonId;
+    const seasons = await this.listSeasons();
+    const now = Date.now();
     const within = (se: any) => {
-      const start = se.start_date ? new Date(se.start_date).getTime() : 0
-      const end = se.end_date ? new Date(se.end_date).getTime() : Number.POSITIVE_INFINITY
-      return start <= now && now <= end
-    }
-    let chosen = seasons.find(within) ?? seasons[0]
-    if (!chosen) chosen = (await this.seasonsFromMatches())[0]
-    this.cachedSeasonId = chosen?.id ?? ''
+      const start = se.start_date ? new Date(se.start_date).getTime() : 0;
+      const end = se.end_date
+        ? new Date(se.end_date).getTime()
+        : Number.POSITIVE_INFINITY;
+      return start <= now && now <= end;
+    };
+    let chosen = seasons.find(within) ?? seasons[0];
+    if (!chosen) chosen = (await this.seasonsFromMatches())[0];
+    this.cachedSeasonId = chosen?.id ?? "";
     if (this.cachedSeasonId)
-      this.log.log(`Selected season: ${chosen?.name ?? '?'} (${this.cachedSeasonId})`)
-    return this.cachedSeasonId ?? ''
+      this.log.log(
+        `Selected season: ${chosen?.name ?? "?"} (${this.cachedSeasonId})`,
+      );
+    return this.cachedSeasonId ?? "";
   }
 
   /** Current season then previous ones; uses match-derived seasons if no list. */
   private async seasonsFromCurrent(): Promise<any[]> {
-    const seasons = await this.listSeasons()
-    const currentId = await this.resolveSeasonId()
+    const seasons = await this.listSeasons();
+    const currentId = await this.resolveSeasonId();
     if (!seasons.length) {
-      const fromMatches = await this.seasonsFromMatches()
-      if (fromMatches.length) return fromMatches
-      return currentId ? [{ id: currentId }] : []
+      const fromMatches = await this.seasonsFromMatches();
+      if (fromMatches.length) return fromMatches;
+      return currentId ? [{ id: currentId }] : [];
     }
-    const idx = seasons.findIndex((se) => se.id === currentId)
-    return idx >= 0 ? seasons.slice(idx) : seasons
+    const idx = seasons.findIndex((se) => se.id === currentId);
+    return idx >= 0 ? seasons.slice(idx) : seasons;
   }
 
   /* ---- Sync (writes) — v2 endpoints --------------------------------- */
@@ -201,41 +267,47 @@ export class SportradarService {
     }
     // Fallback: no recent matches at all -> load the most recent season that has a schedule.
     if ((await this.events.count()) === 0) {
-      const seasons = await this.seasonsFromCurrent()
+      const seasons = await this.seasonsFromCurrent();
       for (let i = 0; i < Math.min(seasons.length, 3); i++) {
-        const m = await this.fetchSeasonSchedule(seasons[i].id)
+        const m = await this.fetchSeasonSchedule(seasons[i].id);
         if (m > 0) {
           if (i > 0)
-            this.log.log(`No recent matches; using previous season ${seasons[i].name ?? seasons[i].id} (${m})`)
-          n += m
-          break
+            this.log.log(
+              `No recent matches; using previous season ${seasons[i].name ?? seasons[i].id} (${m})`,
+            );
+          n += m;
+          break;
         }
       }
     }
-    return n
+    return n;
   }
 
   private async fetchSeasonSchedule(seasonId: string): Promise<number> {
-    if (!seasonId) return 0
+    if (!seasonId) return 0;
     const res = await this.client.get<any>(
       `season-schedule:${seasonId}`,
       `/seasons/${seasonId}/schedules.json`,
       3600,
-    )
-    if (!res.data) return 0
-    const summaries: any[] = res.data?.summaries ?? res.data?.schedules ?? []
-    let n = 0
-    for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0
-    return n
+    );
+    if (!res.data) return 0;
+    const summaries: any[] = res.data?.summaries ?? res.data?.schedules ?? [];
+    let n = 0;
+    for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0;
+    return n;
   }
 
   async syncLiveSummaries(): Promise<number> {
-    const res = await this.client.get<any>('schedule:live', `/schedules/live/summaries.json`, 5)
-    if (!res.data) return 0
-    const summaries: any[] = res.data?.summaries ?? []
-    let n = 0
-    for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0
-    return n
+    const res = await this.client.get<any>(
+      "schedule:live",
+      `/schedules/live/summaries.json`,
+      5,
+    );
+    if (!res.data) return 0;
+    const summaries: any[] = res.data?.summaries ?? [];
+    let n = 0;
+    for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0;
+    return n;
   }
 
   private async upsertEvent(s: any, seasonHint?: string): Promise<boolean> {
@@ -262,75 +334,85 @@ export class SportradarService {
   }
 
   async syncStandings(): Promise<number> {
-    const seasons = await this.seasonsFromCurrent()
+    const seasons = await this.seasonsFromCurrent();
     for (let i = 0; i < Math.min(seasons.length, 3); i++) {
-      const rows = await this.fetchStandingRows(seasons[i].id)
+      const rows = await this.fetchStandingRows(seasons[i].id);
       if (rows.length) {
         // Replace only once we actually have data (never wipe on a failed fetch).
-        await this.standings.clear()
-        await this.standings.save(rows)
+        await this.standings.clear();
+        await this.standings.save(rows);
         if (i > 0)
           this.log.log(
             `Standings empty for current season; using previous season ${seasons[i].name ?? seasons[i].id} (${rows.length} rows)`,
-          )
-        return rows.length
+          );
+        return rows.length;
       }
     }
-    return 0 // keep whatever standings already exist
+    return 0; // keep whatever standings already exist
   }
 
   private async fetchStandingRows(seasonId: string): Promise<SrStanding[]> {
-    if (!seasonId) return []
-    const res = await this.client.get<any>(`standings:${seasonId}`, `/seasons/${seasonId}/standings.json`, 3600)
-    if (!res.data) return []
+    if (!seasonId) return [];
+    const res = await this.client.get<any>(
+      `standings:${seasonId}`,
+      `/seasons/${seasonId}/standings.json`,
+      3600,
+    );
+    if (!res.data) return [];
     // Squash v2 shape: season_standings[].groups[].standings[] (also tolerate flat).
-    const seasonStandings: any[] = res.data?.season_standings ?? res.data?.standings ?? []
-    const raw: any[] = []
+    const seasonStandings: any[] =
+      res.data?.season_standings ?? res.data?.standings ?? [];
+    const raw: any[] = [];
     for (const ss of seasonStandings) {
-      raw.push(...(ss.standings ?? ss.competitor_standings ?? []))
+      raw.push(...(ss.standings ?? ss.competitor_standings ?? []));
       for (const grp of ss.groups ?? []) {
-        raw.push(...(grp.standings ?? grp.competitor_standings ?? []))
+        raw.push(...(grp.standings ?? grp.competitor_standings ?? []));
       }
     }
     return raw.map((row) => {
-      const cmp = row.competitor ?? {}
-      const won = row.win ?? row.won ?? 0
+      const cmp = row.competitor ?? {};
+      const won = row.win ?? row.won ?? 0;
       return this.standings.create({
         seasonId,
         competitorId: cmp.id ?? String(row.rank),
-        competitorName: cmp.name ?? 'Unknown',
+        competitorName: cmp.name ?? "Unknown",
         countryCode: cmp.country_code ?? null,
         rank: row.rank ?? 0,
         played: row.played ?? 0,
         won,
         lost: row.loss ?? row.lost ?? 0,
         points: row.points ?? won * 3,
-      })
-    })
+      });
+    });
   }
 
   async syncCompetitors(): Promise<number> {
-    const seasons = await this.seasonsFromCurrent()
+    const seasons = await this.seasonsFromCurrent();
     for (let i = 0; i < Math.min(seasons.length, 3); i++) {
-      const rows = await this.fetchCompetitorRows(seasons[i].id)
+      const rows = await this.fetchCompetitorRows(seasons[i].id);
       if (rows.length) {
-        await this.competitors.clear()
-        await this.competitors.save(rows)
+        await this.competitors.clear();
+        await this.competitors.save(rows);
         if (i > 0)
           this.log.log(
             `Competitors empty for current season; using previous season ${seasons[i].name ?? seasons[i].id} (${rows.length})`,
-          )
-        return rows.length
+          );
+        return rows.length;
       }
     }
-    return 0 // keep whatever competitors already exist
+    return 0; // keep whatever competitors already exist
   }
 
   private async fetchCompetitorRows(seasonId: string): Promise<SrCompetitor[]> {
-    if (!seasonId) return []
-    const res = await this.client.get<any>(`competitors:${seasonId}`, `/seasons/${seasonId}/competitors.json`, 86400)
-    if (!res.data) return []
-    const list: any[] = res.data?.season_competitors ?? res.data?.competitors ?? []
+    if (!seasonId) return [];
+    const res = await this.client.get<any>(
+      `competitors:${seasonId}`,
+      `/seasons/${seasonId}/competitors.json`,
+      86400,
+    );
+    if (!res.data) return [];
+    const list: any[] =
+      res.data?.season_competitors ?? res.data?.competitors ?? [];
     return list.map((cmp) =>
       this.competitors.create({
         id: cmp.id,
@@ -341,46 +423,57 @@ export class SportradarService {
         played: 0,
         payload: cmp,
       }),
-    )
+    );
   }
 
   /** Build the event calendar from competitions (gender/country) + seasons (dates). */
   async syncCalendar(): Promise<number> {
-    let comps: any[] = []
+    let comps: any[] = [];
     try {
-      const compRes = await this.client.get<any>('competitions', '/competitions.json', 86400)
-      comps = compRes.data?.competitions ?? []
+      const compRes = await this.client.get<any>(
+        "competitions",
+        "/competitions.json",
+        86400,
+      );
+      comps = compRes.data?.competitions ?? [];
     } catch (e: any) {
-      this.log.debug(`competitions unavailable: ${e?.response?.status ?? e?.message}`)
+      this.log.debug(
+        `competitions unavailable: ${e?.response?.status ?? e?.message}`,
+      );
     }
-    const compMap = new Map<string, any>(comps.map((c) => [c.id, c]))
+    const compMap = new Map<string, any>(comps.map((c) => [c.id, c]));
 
     // Prefer the seasons list; if unavailable, derive events from synced matches.
-    let seasons = await this.listSeasons()
-    if (!seasons.length) seasons = await this.seasonsFromMatches()
-    if (!seasons.length) return 0
+    let seasons = await this.listSeasons();
+    if (!seasons.length) seasons = await this.seasonsFromMatches();
+    if (!seasons.length) return 0;
 
     // Best-effort venue per competition from any synced match.
-    const events = await this.events.find({ take: 1000 })
-    const venueByComp = new Map<string, string>()
+    const events = await this.events.find({ take: 1000 });
+    const venueByComp = new Map<string, string>();
     for (const e of events) {
-      const v = (e.payload as any)?.sport_event?.venue
-      const name = [v?.name, v?.city_name ?? v?.city].filter(Boolean).join(', ')
+      const v = (e.payload as any)?.sport_event?.venue;
+      const name = [v?.name, v?.city_name ?? v?.city]
+        .filter(Boolean)
+        .join(", ");
       if (e.tournamentId && name && !venueByComp.has(e.tournamentId)) {
-        venueByComp.set(e.tournamentId, name)
+        venueByComp.set(e.tournamentId, name);
       }
     }
 
     const rows = seasons.map((se) => {
-      const comp = compMap.get(se.competition_id) ?? se.competition ?? {}
-      const cat = comp.category ?? {}
-      const cc = cat.country_code ?? null
+      const comp = compMap.get(se.competition_id) ?? se.competition ?? {};
+      const cat = comp.category ?? {};
+      const cc = cat.country_code ?? null;
       const seVenue = se.venue
-        ? [se.venue.name, se.venue.city_name ?? se.venue.city].filter(Boolean).join(', ')
-        : null
-      const venue = venueByComp.get(se.competition_id) ?? seVenue
-      const hay = `${cat.name ?? ''} ${venue ?? ''} ${se.name ?? ''}`
-      const isSweden = (cc ?? '').toUpperCase().startsWith('SW') || /sweden|malm/i.test(hay)
+        ? [se.venue.name, se.venue.city_name ?? se.venue.city]
+            .filter(Boolean)
+            .join(", ")
+        : null;
+      const venue = venueByComp.get(se.competition_id) ?? seVenue;
+      const hay = `${cat.name ?? ""} ${venue ?? ""} ${se.name ?? ""}`;
+      const isSweden =
+        (cc ?? "").toUpperCase().startsWith("SW") || /sweden|malm/i.test(hay);
       return this.calendar.create({
         id: se.id,
         name: se.name,
@@ -391,26 +484,32 @@ export class SportradarService {
         endDate: se.end_date ?? null,
         venue,
         isSweden,
-      })
-    })
-    await this.calendar.clear()
-    await this.calendar.save(rows)
-    return rows.length
+      });
+    });
+    await this.calendar.clear();
+    await this.calendar.save(rows);
+    return rows.length;
   }
 
-  async syncRankings(type: 'men' | 'women'): Promise<number> {
-    let res: any
+  async syncRankings(type: "men" | "women"): Promise<number> {
+    let res: any;
     try {
-      res = await this.client.get<any>(`rankings:${type}`, `/rankings.json`, 86400)
+      res = await this.client.get<any>(
+        `rankings:${type}`,
+        `/rankings.json`,
+        86400,
+      );
     } catch (e: any) {
       // Rankings are optional and not offered on every squash plan (often 404).
-      this.log.debug(`rankings (${type}) unavailable: ${e?.response?.status ?? e?.message}`)
-      return 0
+      this.log.debug(
+        `rankings (${type}) unavailable: ${e?.response?.status ?? e?.message}`,
+      );
+      return 0;
     }
-    if (!res.data || !res.changed) return 0
-    const week = res.data?.generated_at?.slice(0, 10) ?? ymd(new Date())
-    const list: any[] = res.data?.rankings?.[0]?.competitor_rankings ?? []
-    let n = 0
+    if (!res.data || !res.changed) return 0;
+    const week = res.data?.generated_at?.slice(0, 10) ?? ymd(new Date());
+    const list: any[] = res.data?.rankings?.[0]?.competitor_rankings ?? [];
+    let n = 0;
     for (const r of list) {
       await this.rankings.save(
         this.rankings.create({
@@ -437,29 +536,29 @@ export class SportradarService {
     if (!this.enabled) {
       return {
         enabled: false,
-        hint: 'Sportradar disabled. Set SPORTRADAR_API_KEY + SPORTRADAR_ENABLED=true in backend/.env and RESTART the backend (watch mode does not reload .env).',
-      }
+        hint: "Sportradar disabled. Set SPORTRADAR_API_KEY + SPORTRADAR_ENABLED=true in backend/.env and RESTART the backend (watch mode does not reload .env).",
+      };
     }
-    const out: Record<string, unknown> = { enabled: true }
-    out.baseUrl = this.config.get('sportradar.baseUrl')
+    const out: Record<string, unknown> = { enabled: true };
+    out.baseUrl = this.config.get("sportradar.baseUrl");
     try {
-      out.seasonId = (await this.resolveSeasonId()) || '(none found)'
+      out.seasonId = (await this.resolveSeasonId()) || "(none found)";
     } catch (e: any) {
-      out.seasonId = `error: ${e?.response?.status ?? ''} ${e?.message ?? e}`
+      out.seasonId = `error: ${e?.response?.status ?? ""} ${e?.message ?? e}`;
     }
     const run = async (name: string, fn: () => Promise<number>) => {
       try {
-        out[name] = await fn()
+        out[name] = await fn();
       } catch (e: any) {
-        out[name] = `error: ${e?.response?.status ?? ''} ${e?.message ?? e}`
+        out[name] = `error: ${e?.response?.status ?? ""} ${e?.message ?? e}`;
       }
-    }
-    await run('competitors', () => this.syncCompetitors())
-    await run('calendar', () => this.syncCalendar())
-    await run('schedule', () => this.syncSchedule())
-    await run('live', () => this.syncLiveSummaries())
-    await run('standings', () => this.syncStandings())
-    return out
+    };
+    await run("competitors", () => this.syncCompetitors());
+    await run("calendar", () => this.syncCalendar());
+    await run("schedule", () => this.syncSchedule());
+    await run("live", () => this.syncLiveSummaries());
+    await run("standings", () => this.syncStandings());
+    return out;
   }
 
   /* ---- Read models shaped for the frontend (no origin calls) -------- */
@@ -479,10 +578,20 @@ export class SportradarService {
         : "";
     return {
       id: e.id,
-      time: e.scheduled ? new Date(e.scheduled).toISOString().slice(11, 16) : '',
-      draw: (e.payload as any)?.sport_event?.sport_event_context?.competition?.name ?? '',
-      home: country(e.homeName ?? comp?.[0]?.name ?? 'Team 1', comp?.[0]?.country_code),
-      away: country(e.awayName ?? comp?.[1]?.name ?? 'Team 2', comp?.[1]?.country_code),
+      time: e.scheduled
+        ? new Date(e.scheduled).toISOString().slice(11, 16)
+        : "",
+      draw:
+        (e.payload as any)?.sport_event?.sport_event_context?.competition
+          ?.name ?? "",
+      home: country(
+        e.homeName ?? comp?.[0]?.name ?? "Team 1",
+        comp?.[0]?.country_code,
+      ),
+      away: country(
+        e.awayName ?? comp?.[1]?.name ?? "Team 2",
+        comp?.[1]?.country_code,
+      ),
       score,
       court: (e.payload as any)?.sport_event?.venue?.name ?? "",
       status,
@@ -494,31 +603,31 @@ export class SportradarService {
    * Sweden/Malmö, 1 = nearby region (host or player), 0 = else.
    */
   private eventPriority(e: SrEvent): number {
-    const ev = (e.payload as any)?.sport_event ?? {}
-    const v = ev.venue ?? {}
-    const hostHay = `${v.country ?? ''} ${v.city_name ?? v.city ?? ''} ${v.name ?? ''}`
-    let p = regionPriority(v.country_code, hostHay)
+    const ev = (e.payload as any)?.sport_event ?? {};
+    const v = ev.venue ?? {};
+    const hostHay = `${v.country ?? ""} ${v.city_name ?? v.city ?? ""} ${v.name ?? ""}`;
+    let p = regionPriority(v.country_code, hostHay);
     for (const c of ev.competitors ?? []) {
-      const cp = regionPriority(c.country_code, c.country)
-      if (cp === 2) p = Math.max(p, 3)
-      else if (cp === 1) p = Math.max(p, 1)
+      const cp = regionPriority(c.country_code, c.country);
+      if (cp === 2) p = Math.max(p, 3);
+      else if (cp === 1) p = Math.max(p, 1);
     }
-    return p
+    return p;
   }
 
   /** Season ids in which a Swedish player has competed (from synced matches). */
   private async swedishSeasonIds(): Promise<Set<string>> {
-    const events = await this.events.find({ take: 1000 })
-    const set = new Set<string>()
+    const events = await this.events.find({ take: 1000 });
+    const set = new Set<string>();
     for (const e of events) {
-      const ev = (e.payload as any)?.sport_event ?? {}
+      const ev = (e.payload as any)?.sport_event ?? {};
       const hasSwe = (ev.competitors ?? []).some(
         (c: any) => regionPriority(c.country_code, c.country) === 2,
-      )
-      const sid = ev.sport_event_context?.season?.id
-      if (hasSwe && sid) set.add(sid)
+      );
+      const sid = ev.sport_event_context?.season?.id;
+      if (hasSwe && sid) set.add(sid);
     }
-    return set
+    return set;
   }
 
   async getMatchDays(seasonId?: string) {
@@ -527,9 +636,9 @@ export class SportradarService {
       : await this.events.find({ order: { scheduled: 'DESC' }, take: 1000 })
     const byDay = new Map<string, SrEvent[]>()
     for (const e of rows) {
-      const day = e.scheduled ? ymd(new Date(e.scheduled)) : 'unknown'
-      if (!byDay.has(day)) byDay.set(day, [])
-      byDay.get(day)!.push(e)
+      const day = e.scheduled ? ymd(new Date(e.scheduled)) : "unknown";
+      if (!byDay.has(day)) byDay.set(day, []);
+      byDay.get(day)!.push(e);
     }
     const today = ymd(new Date())
     // Newest day first; return every day (all tournaments, or the whole season).
@@ -538,10 +647,10 @@ export class SportradarService {
       evs.sort((a, b) => this.eventPriority(b) - this.eventPriority(a))
       return {
         date,
-        label: date === today ? 'Today' : date,
+        label: date === today ? "Today" : date,
         matches: evs.map((e) => this.toMatch(e)),
-      }
-    })
+      };
+    });
   }
 
   private toStanding(s: SrStanding) {
@@ -569,47 +678,63 @@ export class SportradarService {
     const tbl = new Map<
       string,
       {
-        name: string
-        code: string | null
-        played: number
-        won: number
-        lost: number
-        gamesWon: number
-        gamesLost: number
+        name: string;
+        code: string | null;
+        played: number;
+        won: number;
+        lost: number;
+        gamesWon: number;
+        gamesLost: number;
       }
-    >()
+    >();
     const touch = (id: string, name: string, code: string | null) => {
-      let r = tbl.get(id)
+      let r = tbl.get(id);
       if (!r) {
-        r = { name, code, played: 0, won: 0, lost: 0, gamesWon: 0, gamesLost: 0 }
-        tbl.set(id, r)
+        r = {
+          name,
+          code,
+          played: 0,
+          won: 0,
+          lost: 0,
+          gamesWon: 0,
+          gamesLost: 0,
+        };
+        tbl.set(id, r);
       }
-      return r
-    }
+      return r;
+    };
     for (const e of events) {
-      const st = (e.payload as any)?.sport_event_status ?? {}
-      if (st.status !== 'closed') continue
-      const comp = (e.payload as any)?.sport_event?.competitors ?? []
-      const h = comp?.[0]
-      const a = comp?.[1]
-      if (!h || !a || st.home_score == null || st.away_score == null) continue
-      const hr = touch(h.id ?? h.name, h.name ?? 'Team 1', h.country_code ?? null)
-      const ar = touch(a.id ?? a.name, a.name ?? 'Team 2', a.country_code ?? null)
-      hr.played++
-      ar.played++
-      hr.gamesWon += st.home_score
-      hr.gamesLost += st.away_score
-      ar.gamesWon += st.away_score
-      ar.gamesLost += st.home_score
+      const st = (e.payload as any)?.sport_event_status ?? {};
+      if (st.status !== "closed") continue;
+      const comp = (e.payload as any)?.sport_event?.competitors ?? [];
+      const h = comp?.[0];
+      const a = comp?.[1];
+      if (!h || !a || st.home_score == null || st.away_score == null) continue;
+      const hr = touch(
+        h.id ?? h.name,
+        h.name ?? "Team 1",
+        h.country_code ?? null,
+      );
+      const ar = touch(
+        a.id ?? a.name,
+        a.name ?? "Team 2",
+        a.country_code ?? null,
+      );
+      hr.played++;
+      ar.played++;
+      hr.gamesWon += st.home_score;
+      hr.gamesLost += st.away_score;
+      ar.gamesWon += st.away_score;
+      ar.gamesLost += st.home_score;
       if (st.home_score > st.away_score) {
-        hr.won++
-        ar.lost++
+        hr.won++;
+        ar.lost++;
       } else {
-        ar.won++
-        hr.lost++
+        ar.won++;
+        hr.lost++;
       }
     }
-    return tbl
+    return tbl;
   }
 
   private async computeStandings(eventsArg?: SrEvent[]) {
@@ -626,17 +751,17 @@ export class SportradarService {
         rubbers: `${r.won}-${r.lost}`,
         games: `${r.gamesWon}-${r.gamesLost}`,
         points: r.won * 3,
-      }))
+      }));
   }
 
   private async standingsRows() {
-    const stored = (await this.standings.find({ order: { rank: 'ASC' } })).map((s) =>
-      this.toStanding(s),
-    )
-    const computed = await this.computeStandings()
+    const stored = (await this.standings.find({ order: { rank: "ASC" } })).map(
+      (s) => this.toStanding(s),
+    );
+    const computed = await this.computeStandings();
     // Use whichever source has more rows so positions 9-16 are populated when a
     // season's official table is only a single 8-player pool.
-    return computed.length > stored.length ? computed : stored
+    return computed.length > stored.length ? computed : stored;
   }
 
   async getStandings(bracket: 'top' | 'bottom', seasonId?: string) {
@@ -655,36 +780,40 @@ export class SportradarService {
       (a, b) =>
         this.eventPriority(b) - this.eventPriority(a) ||
         (b.scheduled?.getTime() ?? 0) - (a.scheduled?.getTime() ?? 0),
-    )
-    return rows.slice(0, 6).map((e) => this.toMatch(e))
+    );
+    return rows.slice(0, 6).map((e) => this.toMatch(e));
   }
 
   /** Event calendar: all squash tournaments with dates, gender, venue & host country. */
   async getCalendar() {
-    const all = await this.calendar.find()
-    const swePlaying = await this.swedishSeasonIds()
+    const all = await this.calendar.find();
+    const swePlaying = await this.swedishSeasonIds();
     return all
       .map((c) => {
         const hostP = regionPriority(
           c.countryCode,
-          `${c.countryName ?? ''} ${c.venue ?? ''} ${c.name ?? ''}`,
-        )
-        const priority = swePlaying.has(c.id) ? 3 : hostP
+          `${c.countryName ?? ""} ${c.venue ?? ""} ${c.name ?? ""}`,
+        );
+        const priority = swePlaying.has(c.id) ? 3 : hostP;
         return {
           id: c.id,
           name: c.name,
           gender: c.gender,
           dateFrom: c.startDate,
           dateTo: c.endDate,
-          country: country(c.countryName ?? c.countryCode ?? '', c.countryCode),
+          country: country(c.countryName ?? c.countryCode ?? "", c.countryCode),
           venue: c.venue,
           isSweden: priority >= 2,
           swedenPlaying: priority === 3,
           nearby: priority === 1,
           priority,
-        }
+        };
       })
-      .sort((a, b) => b.priority - a.priority || (b.dateFrom ?? '').localeCompare(a.dateFrom ?? ''))
+      .sort(
+        (a, b) =>
+          b.priority - a.priority ||
+          (b.dateFrom ?? "").localeCompare(a.dateFrom ?? ""),
+      );
   }
 
   /** Identity (name/country/gender) of every player seen in synced matches. */
@@ -692,21 +821,21 @@ export class SportradarService {
     const events = eventsArg ?? (await this.events.find({ take: 1000 }))
     const map = new Map<string, { name: string; code: string | null; country: string | null; gender: string | null }>()
     for (const e of events) {
-      const ctx = (e.payload as any)?.sport_event?.sport_event_context ?? {}
-      const gender = ctx.competition?.gender ?? null
-      const comps = (e.payload as any)?.sport_event?.competitors ?? []
+      const ctx = (e.payload as any)?.sport_event?.sport_event_context ?? {};
+      const gender = ctx.competition?.gender ?? null;
+      const comps = (e.payload as any)?.sport_event?.competitors ?? [];
       for (const c of comps) {
         if (c?.id && !map.has(c.id)) {
           map.set(c.id, {
-            name: c.name ?? 'Unknown',
+            name: c.name ?? "Unknown",
             code: c.country_code ?? null,
             country: c.country ?? null,
             gender,
-          })
+          });
         }
       }
     }
-    return map
+    return map;
   }
 
   /**
@@ -737,17 +866,17 @@ export class SportradarService {
       .sort(([, x], [, y]) => y.won - x.won || x.lost - y.lost || y.played - x.played)
       .forEach(([id], i) => rankById.set(id, i + 1))
     const players = [...fromMatches.entries()].map(([id, m]) => {
-      const st = stats.get(id)
-      const decided = (st?.won ?? 0) + (st?.lost ?? 0)
+      const st = stats.get(id);
+      const decided = (st?.won ?? 0) + (st?.lost ?? 0);
       return {
         id,
         name: m.name,
-        country: country(m.country ?? m.code ?? '', m.code),
+        country: country(m.country ?? m.code ?? "", m.code),
         gender: m.gender ?? null,
         played: st?.played ?? 0,
         won: st?.won ?? 0,
         lost: st?.lost ?? 0,
-        games: st ? `${st.gamesWon}-${st.gamesLost}` : '0-0',
+        games: st ? `${st.gamesWon}-${st.gamesLost}` : "0-0",
         winPct: decided ? Math.round(((st?.won ?? 0) / decided) * 100) : 0,
         rank: rankById.get(id) ?? null,
       }
@@ -773,8 +902,8 @@ export class SportradarService {
     const sweden = players.filter(isSwe)
     const countries: Record<string, number> = {}
     for (const p of players) {
-      const k = p.country.name || p.country.code || '—'
-      countries[k] = (countries[k] ?? 0) + 1
+      const k = p.country.name || p.country.code || "—";
+      countries[k] = (countries[k] ?? 0) + 1;
     }
     const groupStandings = (
       events ? await this.computeStandings(events) : await this.standingsRows()
@@ -787,7 +916,7 @@ export class SportradarService {
       sweden,
       countries,
       counts: { men: men.length, women: women.length, sweden: sweden.length },
-    }
+    };
   }
 
   /** Fetch a season's full match list on demand (Season Summaries endpoint). */

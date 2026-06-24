@@ -8,13 +8,15 @@ import { useApi } from '@/composables/useApi'
 import { useSeason } from '@/composables/useSeason'
 import type { Player } from '@/types'
 
-interface PlayersData {
+interface SwedenData {
   men: Player[]
   women: Player[]
+  sweden: Player[]
+  countries?: Record<string, number>
 }
 
 const { withSeason } = useSeason()
-const { data, loading, error, retry } = useApi<PlayersData>(() => withSeason('/content/sweden'))
+const { data, loading, error, retry } = useApi<SwedenData>(() => withSeason('/content/sweden'))
 
 // All players in scope, ranked by wins then matches played.
 const players = computed<Player[]>(() => {

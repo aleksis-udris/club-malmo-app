@@ -44,7 +44,9 @@ const statusLabel: Record<Match['status'], string> = {
           :key="match.id"
           class="border-t border-primary-container transition hover:bg-primary-container/60"
         >
-          <td class="whitespace-nowrap px-3 py-3 font-semibold tabular-nums text-on-surface-variant">
+          <td
+            class="whitespace-nowrap px-3 py-3 font-semibold tabular-nums text-on-surface-variant"
+          >
             {{ match.time }}
           </td>
           <td v-if="showDraw" class="px-3 py-3 text-on-surface-variant">{{ match.draw }}</td>
