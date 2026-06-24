@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get, Param, Query } from '@nestjs/common'
 import { ContentService } from './content.service'
 
 // Public read models for the championship content (matches, standings, players).
@@ -12,27 +12,38 @@ export class ContentController {
   }
 
   @Get('match-days')
-  matchDays() {
-    return this.content.matchDays()
+  matchDays(@Query('season') season?: string) {
+    return this.content.matchDays(season)
   }
 
   @Get('standings')
-  standings(@Query('bracket') bracket: 'top' | 'bottom' = 'top') {
-    return this.content.standings(bracket === 'bottom' ? 'bottom' : 'top')
+  standings(
+    @Query('bracket') bracket: 'top' | 'bottom' = 'top',
+    @Query('season') season?: string,
+  ) {
+    return this.content.standings(bracket === 'bottom' ? 'bottom' : 'top', season)
   }
 
   @Get('latest')
-  latest(@Query('bracket') bracket: 'top' | 'bottom' = 'top') {
-    return this.content.latest(bracket === 'bottom' ? 'bottom' : 'top')
+  latest(
+    @Query('bracket') bracket: 'top' | 'bottom' = 'top',
+    @Query('season') season?: string,
+  ) {
+    return this.content.latest(bracket === 'bottom' ? 'bottom' : 'top', season)
   }
 
   @Get('sweden')
-  sweden() {
-    return this.content.sweden()
+  sweden(@Query('season') season?: string) {
+    return this.content.sweden(season)
   }
 
   @Get('calendar')
   calendar() {
     return this.content.calendar()
+  }
+
+  @Get('event/:id')
+  event(@Param('id') id: string) {
+    return this.content.event(id)
   }
 }

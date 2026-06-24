@@ -7,6 +7,7 @@ import MatchTable from '@/components/MatchTable.vue'
 import StandingsTable from '@/components/StandingsTable.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import { useApi } from '@/composables/useApi'
+import { useSeason } from '@/composables/useSeason'
 import type { MatchDay, StandingRow } from '@/types'
 
 interface Meta {
@@ -16,10 +17,11 @@ interface Sweden {
   counts: { men: number; women: number }
 }
 
+const { withSeason } = useSeason()
 const meta = useApi<Meta>('/content/meta')
-const days = useApi<MatchDay[]>('/content/match-days')
-const standings = useApi<StandingRow[]>('/content/standings?bracket=top')
-const sweden = useApi<Sweden>('/content/sweden')
+const days = useApi<MatchDay[]>(() => withSeason('/content/match-days'))
+const standings = useApi<StandingRow[]>(() => withSeason('/content/standings?bracket=top'))
+const sweden = useApi<Sweden>(() => withSeason('/content/sweden'))
 
 const today = computed(() => days.data.value?.[0] ?? null)
 const liveCount = computed(
