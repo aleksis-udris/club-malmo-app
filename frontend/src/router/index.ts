@@ -23,7 +23,7 @@ const routes = [
     name: 'event',
     component: () => import('@/views/EventView.vue'),
   },
-  { path: '/sweden', name: 'sweden', component: () => import('@/views/SwedenView.vue') },
+  { path: '/nations', name: 'nations', component: () => import('@/views/SwedenView.vue') },
   {
     path: '/players',
     name: 'players',

@@ -15,6 +15,8 @@ interface Meta {
 }
 interface Sweden {
   counts: { men: number; women: number }
+  men: { country?: { code: string; name: string } }[]
+  women: { country?: { code: string; name: string } }[]
 }
 
 const { withSeason } = useSeason()
@@ -30,9 +32,20 @@ const liveCount = computed(
 const squad = computed(() =>
   sweden.data.value ? sweden.data.value.counts.men + sweden.data.value.counts.women : 0,
 )
+const nationCount = computed(() => {
+  const d = sweden.data.value
+  if (!d) return 0
+  const codes = new Set<string>()
+  for (const p of [...(d.men ?? []), ...(d.women ?? [])]) {
+    const c = p.country?.code || p.country?.name
+    if (c) codes.add(c)
+  }
+  return codes.size
+})
 
 const iconLive = '<span class="icon" aria-hidden="true">radio_button_checked</span>'
 const iconCalendar = '<span class="icon" aria-hidden="true">calendar_month</span>'
+const iconGroup = '<span class="icon" aria-hidden="true">group</span>'
 const iconFlag = '<span class="icon" aria-hidden="true">flag</span>'
 const iconPublic = '<span class="icon" aria-hidden="true">public</span>'
 
@@ -56,10 +69,10 @@ const quickLinks = [
     desc: 'ESF championship table',
   },
   {
-    to: '/sweden',
-    icon: '<span class="icon" aria-hidden="true">flag</span>',
-    label: 'Club Sweden',
-    desc: 'Stats & group table',
+    to: '/nations',
+    icon: '<span class="icon" aria-hidden="true">public</span>',
+    label: 'Nations',
+    desc: 'Country medal table',
   },
   {
     to: '/players',
@@ -85,8 +98,8 @@ const quickLinks = [
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <StatCard label="Live now" :value="liveCount" :icon="iconLive" hint="matches in play" />
       <StatCard label="Today's matches" :value="today?.matches.length ?? 0" :icon="iconCalendar" />
-      <StatCard label="Sweden squad" :value="squad" :icon="iconFlag" hint="men & women" />
-      <StatCard label="Nations" :value="16" :icon="iconPublic" hint="U15 & U17 combined" />
+      <StatCard label="Players" :value="squad" :icon="iconGroup" hint="men & women" />
+      <StatCard label="Nations" :value="nationCount" :icon="iconPublic" hint="participating countries" />
     </div>
 
     <section>

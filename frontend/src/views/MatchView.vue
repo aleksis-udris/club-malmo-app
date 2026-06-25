@@ -16,14 +16,53 @@ const filter = ref('')
 const statusFilter = ref('')
 const dates = computed(() => data.value?.map((d) => d.date) ?? [])
 
-// Flatten all days into a single match list, keeping each match's date.
+// Order days: today first, then past/played matches (newest first), then upcoming (soonest first).
+const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local
+// Oldest past date to keep (2 weeks ago); older matches are hidden.
+const twoWeeksAgo = (() => {
+  const d = new Date()
+  d.setDate(d.getDate() - 14)
+  return d.toLocaleDateString('en-CA')
+})()
+// Are there any matches actually scheduled for today?
+const hasToday = computed(() =>
+  (data.value ?? []).some((d) => d.date === today && d.matches.length > 0),
+)
 type Row = Match & { date: string }
+// Group order: today on top; then if today exists -> upcoming, past last;
+// if no today -> past on top, upcoming last.
+function groupRank(date: string): number {
+  if (date === 'unknown') return 9
+  if (date === today) return 0
+  const future = date > today
+  return hasToday.value ? (future ? 1 : 2) : future ? 1 : 0
+}
+
 const rows = computed<Row[]>(() => {
   if (!data.value) return []
-  const days = filter.value ? data.value.filter((d) => d.date === filter.value) : data.value
-  let r = days.flatMap((d) => d.matches.map((m) => ({ ...m, date: d.date })))
+  // Drop matches more than 2 weeks old (keep today, recent past, all upcoming).
+  let days = data.value.filter((d) => d.date === 'unknown' || d.date >= twoWeeksAgo)
+  if (filter.value) days = days.filter((d) => d.date === filter.value)
+  let r: Row[] = days.flatMap((d) => d.matches.map((m) => ({ ...m, date: d.date })))
   if (statusFilter.value) r = r.filter((m) => m.status === statusFilter.value)
-  return r
+
+  return r.sort((a, b) => {
+    const ga = groupRank(a.date)
+    const gb = groupRank(b.date)
+    if (ga !== gb) return ga - gb
+    const past = a.date !== 'unknown' && a.date < today
+    // Within past (no-today case): matches with a score come first.
+    if (past && !hasToday.value) {
+      const sa = a.score ? 0 : 1
+      const sb = b.score ? 0 : 1
+      if (sa !== sb) return sa - sb
+    }
+    const aFuture = a.date !== 'unknown' && a.date > today
+    if (a.date !== b.date) {
+      return aFuture ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
+    }
+    return (a.time || '').localeCompare(b.time || '')
+  })
 })
 
 const fmtDate = (s: string) =>
@@ -96,17 +135,17 @@ const statusLabel: Record<Match['status'], string> = {
     <SectionCard v-else :subtitle="`${rows.length} matches`" title="Matches">
       <StateBlock v-if="!rows.length" type="empty" message="No matches available." />
       <div v-else class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
+        <table class="w-full border-collapse text-xs">
           <thead>
             <tr class="text-left text-xs uppercase tracking-wider text-slate-400">
-              <th class="px-2.5 py-3 font-semibold">Date</th>
-              <th class="px-2.5 py-3 font-semibold">Time</th>
-              <th class="px-2.5 py-3 font-semibold">Tournament</th>
-              <th class="px-2.5 py-3 font-semibold">Team 1</th>
-              <th class="px-2.5 py-3 text-center font-semibold">Score</th>
-              <th class="px-2.5 py-3 font-semibold">Team 2</th>
-              <th class="px-2.5 py-3 font-semibold">Court</th>
-              <th class="px-2.5 py-3 text-right font-semibold">Status</th>
+              <th class="px-2 py-3 font-semibold">Date</th>
+              <th class="px-2 py-3 font-semibold">Time</th>
+              <th class="px-2 py-3 font-semibold">Tournament</th>
+              <th class="px-2 py-3 font-semibold">Team 1</th>
+              <th class="px-2 py-3 text-center font-semibold">Score</th>
+              <th class="px-2 py-3 font-semibold">Team 2</th>
+              <th class="px-2 py-3 font-semibold">Court</th>
+              <th class="px-2 py-3 text-right font-semibold">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -115,27 +154,27 @@ const statusLabel: Record<Match['status'], string> = {
               :key="m.id"
               class="border-t border-brand-50 transition hover:bg-brand-50/60"
             >
-              <td class="whitespace-nowrap px-2.5 py-3 font-semibold text-slate-600">
+              <td class="whitespace-nowrap px-2 py-3 font-semibold text-slate-600">
                 {{ fmtDate(m.date) }}
               </td>
-              <td class="whitespace-nowrap px-2.5 py-3 tabular-nums text-slate-500">
+              <td class="whitespace-nowrap px-2 py-3 tabular-nums text-slate-500">
                 {{ m.time || '—' }}
               </td>
-              <td class="px-2.5 py-3 text-slate-500">{{ m.draw || '—' }}</td>
-              <td class="px-2.5 py-3"><CountryFlag :country="m.home" /></td>
-              <td class="px-2.5 py-3 text-center">
+              <td class="px-2 py-3 text-slate-500">{{ m.draw || '—' }}</td>
+              <td class="px-2 py-3"><CountryFlag :country="m.home" /></td>
+              <td class="px-2 py-3 text-center">
                 <span
                   v-if="m.score"
-                  class="inline-block rounded-md bg-brand-50 px-2.5 py-1 font-extrabold tabular-nums text-brand-700"
+                  class="inline-block rounded-md bg-brand-50 px-2 py-1 font-extrabold tabular-nums text-brand-700"
                   >{{ m.score }}</span
                 >
                 <span v-else class="text-slate-300">vs</span>
               </td>
-              <td class="px-2.5 py-3"><CountryFlag :country="m.away" /></td>
-              <td class="whitespace-nowrap px-2.5 py-3 text-slate-500">{{ m.court || '—' }}</td>
-              <td class="px-2.5 py-3 text-right">
+              <td class="px-2 py-3"><CountryFlag :country="m.away" /></td>
+              <td class="px-2 py-3 text-slate-500">{{ m.court || '—' }}</td>
+              <td class="px-2 py-3 text-right">
                 <span
-                  class="inline-block rounded-full px-2.5 py-1 text-xs font-bold"
+                  class="inline-block rounded-full px-2 py-1 text-xs font-bold"
                   :class="statusStyle[m.status]"
                   >{{ statusLabel[m.status] }}</span
                 >

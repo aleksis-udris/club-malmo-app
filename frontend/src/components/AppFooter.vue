@@ -29,7 +29,7 @@ const year = new Date().getFullYear()
           aria-label="Facebook"
           class="transition hover:scale-110"
         >
-          <img src="/facebook.png" alt="Facebook" class="h-7 w-7 rounded object-contain" />
+          <img src="/facebook.png" alt="Facebook" class="h-5 w-5 rounded object-contain" />
         </a>
         <a
           href="https://www.instagram.com/theclubmalmoe/?hl=en"
@@ -38,7 +38,7 @@ const year = new Date().getFullYear()
           aria-label="Instagram"
           class="transition hover:scale-110"
         >
-          <img src="/instagram.jpg" alt="Instagram" class="h-7 w-7 rounded object-contain" />
+          <img src="/instagram.jpg" alt="Instagram" class="h-5 w-5 rounded object-contain" />
         </a>
       </div>
       <p class="mt-4 text-xs text-outline">© {{ year }} Squash Club Malmö</p>

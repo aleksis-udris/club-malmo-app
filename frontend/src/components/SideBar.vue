@@ -17,7 +17,7 @@ const groups: { heading: string; items: NavItem[] }[] = [
       { to: '/calendar', label: 'Event Calendar', icon: '<span class="icon" aria-hidden="true">event</span>' },
       { to: '/standings', label: 'Standings (1–8)', icon: '<span class="icon" aria-hidden="true">emoji_events</span>' },
       { to: '/players', label: 'Players', icon: '<span class="icon" aria-hidden="true">group</span>' },
-      { to: '/sweden', label: 'Club Sweden', icon: '<span class="icon" aria-hidden="true">flag</span>' },
+      { to: '/nations', label: 'Nations', icon: '<span class="icon" aria-hidden="true">public</span>' },
     ],
   },
   {

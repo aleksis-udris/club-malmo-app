@@ -1,6 +1,55 @@
 <!doctype html>
 <html lang="">
   <head>
+    <script>
+      // Polyfill for old smart-TV browsers (Tizen/webOS) that lack AbortController
+      // (Chrome <66). fetch on these engines ignores the signal, so a no-op-ish
+      // controller is enough to let request code run without throwing.
+      (function () {
+        if (typeof window.AbortController !== 'undefined') return
+        function Signal() { this.aborted = false; this._cbs = [] }
+        Signal.prototype.addEventListener = function (t, cb) { if (t === 'abort') this._cbs.push(cb) }
+        Signal.prototype.removeEventListener = function (t, cb) {
+          if (t === 'abort') { var i = this._cbs.indexOf(cb); if (i >= 0) this._cbs.splice(i, 1) }
+        }
+        Signal.prototype.dispatchEvent = function () { return true }
+        function Controller() { this.signal = new Signal() }
+        Controller.prototype.abort = function () {
+          if (this.signal.aborted) return
+          this.signal.aborted = true
+          for (var i = 0; i < this.signal._cbs.length; i++) {
+            try { this.signal._cbs[i]({ type: 'abort' }) } catch (e) {}
+          }
+        }
+        window.AbortController = Controller
+        if (typeof window.AbortSignal === 'undefined') window.AbortSignal = Signal
+      })()
+    </script>
+    <script>
+      // On-screen error overlay so old TV browsers show the real error instead of a
+      // blank page. Plain ES5 so it runs even when the app bundle fails to parse.
+      (function () {
+        function box() {
+          var d = document.getElementById('boot-error')
+          if (!d) {
+            d = document.createElement('pre')
+            d.id = 'boot-error'
+            d.style.cssText =
+              'position:fixed;left:0;top:0;right:0;z-index:99999;margin:0;padding:12px;background:#b00020;color:#fff;font:14px/1.4 monospace;white-space:pre-wrap;max-height:70%;overflow:auto'
+            ;(document.body || document.documentElement).appendChild(d)
+          }
+          return d
+        }
+        window.addEventListener('error', function (e) {
+          box().textContent +=
+            '\n' + (e.message || 'error') + (e.filename ? ('\n@ ' + e.filename + ':' + e.lineno) : '')
+        })
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e.reason
+          box().textContent += '\n[promise] ' + ((r && (r.stack || r.message)) || r)
+        })
+      })()
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
