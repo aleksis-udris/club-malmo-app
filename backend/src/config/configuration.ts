@@ -35,12 +35,10 @@ export default (): AppConfig => ({
     enabled:
       (process.env.SPORTRADAR_ENABLED ?? 'false') === 'true' &&
       !!(process.env.SPORTRADAR_API_KEY ?? ''),
-    qps: parseInt(process.env.SPORTRADAR_QPS ?? '1', 10),
+    qps: parseFloat(process.env.SPORTRADAR_QPS ?? '1'),
     seasonId: process.env.SPORTRADAR_SEASON_ID ?? '',
     competitionId: process.env.SPORTRADAR_COMPETITION_ID ?? '',
-    // Hard ceiling on origin requests per calendar day (default 1000).
     dailyLimit: parseInt(process.env.SPORTRADAR_DAILY_LIMIT ?? '1000', 10),
-    // Only call the API during club working hours (local server time, 24h clock).
     workStartHour: parseInt(process.env.SPORTRADAR_WORK_START_HOUR ?? '9', 10),
     workEndHour: parseInt(process.env.SPORTRADAR_WORK_END_HOUR ?? '17', 10),
   },

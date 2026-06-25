@@ -13,20 +13,17 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
   app.useGlobalFilters(new AllExceptionsFilter())
 
-  // When CORS_ORIGIN is '*' (default), reflect the request origin so the frontend
-  // works whether it's opened on localhost or the LAN IP. credentials:true cannot
-  // be combined with a literal '*', hence the reflect.
+  // CORS_ORIGIN='*' (default) -> reflect the request origin so the frontend works
+  // from localhost or the LAN IP. credentials:true cannot pair with a literal '*'.
   const corsOrigin = config.get<string>('corsOrigin')
   app.enableCors({ origin: corsOrigin === '*' ? true : corsOrigin, credentials: true })
 
   const port = config.get<number>('port') ?? 3000
-  // Bind to 0.0.0.0 so the API is reachable on the LAN IP (e.g. 192.168.1.123)
-  // AND on localhost at the same time. Override the interface with HOST if needed.
   const host = process.env.HOST ?? '0.0.0.0'
   await app.listen(port, host)
 
   const log = new Logger('Bootstrap')
-  log.log(`Backend listening on http://192.168.1.123:${port}/api/v1 (LAN)`)
+  log.log(`Backend listening on http://192.168.1.5:${port}/api/v1 (LAN)`)
   log.log(`Backend listening on http://localhost:${port}/api/v1 (local)`)
 }
 bootstrap()

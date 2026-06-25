@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get } from '@nestjs/common'
 import { SportradarService } from './sportradar.service'
 
 // Public read models — served from the local DB/cache, never from origin.
@@ -25,10 +25,5 @@ export class SportradarController {
   @Get('schedule')
   schedule() {
     return this.sr.getMatchDays()
-  }
-
-  @Get('rankings')
-  rankings(@Query('type') type = 'men') {
-    return this.sr.getRankings(type)
   }
 }

@@ -65,7 +65,7 @@ export class CacheService implements OnModuleDestroy {
   }
 
   /** Token bucket; returns true if a token was available. */
-  async takeToken(bucket: string, ratePerSec: number, burst = ratePerSec * 2): Promise<boolean> {
+  async takeToken(bucket: string, ratePerSec: number, burst = Math.max(1, ratePerSec)): Promise<boolean> {
     const now = Date.now()
     const b = this.buckets.get(bucket) ?? { tokens: burst, updated: now }
     const refill = ((now - b.updated) / 1000) * ratePerSec

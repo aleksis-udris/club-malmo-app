@@ -16,7 +16,7 @@ const API_BASES: string[] = ENV_BASE
 // Remembered working base (set after the first successful request).
 let activeBase: string | null = null
 
-export const API_BASE: string = API_BASES[0]
+export const API_BASE: string = API_BASES[0] ?? 'http://localhost:3000/api/v1'
 
 export class ApiError extends Error {
   constructor(

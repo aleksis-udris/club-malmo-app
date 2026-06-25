@@ -49,7 +49,7 @@ export class SportradarClient {
   }
 
   private get enabled(): boolean {
-    return !!this.config.get('sportradar.enabled')
+    return true//!!this.config.get('sportradar.enabled')
   }
 
   /** Load the persisted counter once; restores today's count after a restart. */

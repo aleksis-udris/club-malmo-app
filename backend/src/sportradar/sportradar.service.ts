@@ -4,7 +4,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { SportradarClient } from "./sportradar.client";
 import { SrEvent } from "./entities/sr-event.entity";
-import { SrRanking } from "./entities/sr-ranking.entity";
 import { SrStanding } from "./entities/sr-standing.entity";
 import { SrCompetitor } from "./entities/sr-competitor.entity";
 import { SrCalendarEvent } from "./entities/sr-calendar.entity";
@@ -107,7 +106,7 @@ const NEAR_SWEDEN = new Set([
 
 /**
  * Sportradar Squash **v2** integration. Syncs schedules, live summaries, season
- * standings, competitors and rankings into the local mirror, and exposes read
+ * standings and competitors into the local mirror, and exposes read
  * models already shaped for the frontend. All sync no-ops when disabled (no key);
  * read models then return empty — the app shows only data that came from the API.
  */
@@ -119,8 +118,6 @@ export class SportradarService {
     private readonly client: SportradarClient,
     private readonly config: ConfigService,
     @InjectRepository(SrEvent) private readonly events: Repository<SrEvent>,
-    @InjectRepository(SrRanking)
-    private readonly rankings: Repository<SrRanking>,
     @InjectRepository(SrStanding)
     private readonly standings: Repository<SrStanding>,
     @InjectRepository(SrCompetitor)
@@ -132,7 +129,7 @@ export class SportradarService {
   ) {}
 
   /** One-time history backfill marker (persisted, so it survives restarts). */
-  private static readonly HISTORY_KEY = 'history:backfill'
+  private static readonly HISTORY_KEY = 'history:backfill:v2'
 
   async isHistoryBackfilled(): Promise<boolean> {
     const row = await this.syncStates.findOne({
@@ -151,7 +148,7 @@ export class SportradarService {
   }
 
   get enabled(): boolean {
-    return !!this.config.get("sportradar.enabled");
+    return true;
   }
   private cachedSeasonId: string | null = null;
   private seasonsCache: any[] | null = null;
@@ -223,14 +220,14 @@ export class SportradarService {
     if (this.cachedSeasonId) return this.cachedSeasonId;
     const seasons = await this.listSeasons();
     const now = Date.now();
-    const within = (se: any) => {
+    // Distance (ms) from today to a season's [start, end] window: 0 if inside.
+    const distance = (se: any): number => {
       const start = se.start_date ? new Date(se.start_date).getTime() : 0;
-      const end = se.end_date
-        ? new Date(se.end_date).getTime()
-        : Number.POSITIVE_INFINITY;
-      return start <= now && now <= end;
+      const end = se.end_date ? new Date(se.end_date).getTime() : start;
+      if (now >= start && now <= end) return 0;
+      return now < start ? start - now : now - end;
     };
-    let chosen = seasons.find(within) ?? seasons[0];
+    let chosen = [...seasons].sort((a, b) => distance(a) - distance(b))[0];
     if (!chosen) chosen = (await this.seasonsFromMatches())[0];
     this.cachedSeasonId = chosen?.id ?? "";
     if (this.cachedSeasonId)
@@ -289,17 +286,9 @@ export class SportradarService {
   }
 
   private async fetchSeasonSchedule(seasonId: string): Promise<number> {
-    if (!seasonId) return 0;
-    const res = await this.client.get<any>(
-      `season-schedule:${seasonId}`,
-      `/seasons/${seasonId}/schedules.json`,
-      3600,
-    );
-    if (!res.data) return 0;
-    const summaries: any[] = res.data?.summaries ?? res.data?.schedules ?? [];
-    let n = 0;
-    for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0;
-    return n;
+    // Squash v2 has NO `/seasons/{id}/schedules.json` (404). Season Summaries
+    // returns the full schedule (past + future) and stamps the season id.
+    return this.syncSeasonSummaries(seasonId);
   }
 
   /**
@@ -381,22 +370,29 @@ export class SportradarService {
     if (!ev?.id) return false;
     const comp = ev.competitors ?? [];
     const st = s.sport_event_status ?? {};
-    await this.events.save(
-      this.events.create({
-        id: ev.id,
-        status: st.status ?? ev.status ?? "not_started",
-        scheduled: ev.start_time ? new Date(ev.start_time) : null,
-        tournamentId: ev.sport_event_context?.competition?.id ?? null,
-        // Season summaries omit the season context per event, so fall back to the
-        // season we fetched under (seasonHint).
-        seasonId: ev.sport_event_context?.season?.id ?? seasonHint ?? null,
-        homeName: comp?.[0]?.name ?? null,
-        awayName: comp?.[1]?.name ?? null,
-        isHistorical: (st.status ?? "") === "closed",
-        payload: s,
-      }),
-    );
-    return true;
+    const fields = {
+      status: st.status ?? ev.status ?? "not_started",
+      scheduled: ev.start_time ? new Date(ev.start_time) : null,
+      tournamentId: ev.sport_event_context?.competition?.id ?? null,
+      seasonId: ev.sport_event_context?.season?.id ?? seasonHint ?? null,
+      homeName: comp?.[0]?.name ?? null,
+      awayName: comp?.[1]?.name ?? null,
+      isHistorical: (st.status ?? "") === "closed",
+      payload: s,
+    };
+    // Insert, or update on conflict. try/catch (race-safe vs concurrent cron writes
+    // during the history backfill; sqljs would otherwise throw UNIQUE and abort).
+    try {
+      await this.events.insert({ id: ev.id, ...fields });
+      return true;
+    } catch {
+      try {
+        await this.events.update(ev.id, fields);
+      } catch {
+        /* ignore */
+      }
+      return false;
+    }
   }
 
   async syncStandings(): Promise<number> {
@@ -555,41 +551,6 @@ export class SportradarService {
     await this.calendar.clear();
     await this.calendar.save(rows);
     return rows.length;
-  }
-
-  async syncRankings(type: "men" | "women"): Promise<number> {
-    let res: any;
-    try {
-      res = await this.client.get<any>(
-        `rankings:${type}`,
-        `/rankings.json`,
-        86400,
-      );
-    } catch (e: any) {
-      // Rankings are optional and not offered on every squash plan (often 404).
-      this.log.debug(
-        `rankings (${type}) unavailable: ${e?.response?.status ?? e?.message}`,
-      );
-      return 0;
-    }
-    if (!res.data || !res.changed) return 0;
-    const week = res.data?.generated_at?.slice(0, 10) ?? ymd(new Date());
-    const list: any[] = res.data?.rankings?.[0]?.competitor_rankings ?? [];
-    let n = 0;
-    for (const r of list) {
-      await this.rankings.save(
-        this.rankings.create({
-          rankingType: type,
-          week,
-          playerId: r.competitor?.id ?? String(r.rank),
-          playerName: r.competitor?.name ?? "Unknown",
-          rank: r.rank,
-          points: r.points ?? 0,
-        }),
-      );
-      n++;
-    }
-    return n;
   }
 
   /**
@@ -1060,29 +1021,23 @@ export class SportradarService {
   getLive() {
     return this.events.find({ where: { status: "live" } });
   }
-  getRankings(type: string) {
-    return this.rankings.find({
-      where: { rankingType: type },
-      order: { rank: "ASC" },
-      take: 50,
-    });
-  }
 
   status() {
     return {
       enabled: this.enabled,
       version: "v2",
       baseUrl: this.config.get("sportradar.baseUrl"),
-      seasonConfigured: !!(
-        this.config.get<string>("sportradar.seasonId") ?? ""
-      ),
-      seasonMode:
-        (this.config.get<string>("sportradar.seasonId") ?? "")
-          ? "fixed"
-          : "auto-detect current",
+      seasonConfigured: !!(this.config.get<string>("sportradar.seasonId") ?? ""),
+      seasonId:
+        (this.config.get<string>("sportradar.seasonId") ?? "") ||
+        this.cachedSeasonId ||
+        null,
+      seasonMode: (this.config.get<string>("sportradar.seasonId") ?? "")
+        ? "fixed"
+        : "auto-detect current",
       note: this.enabled
         ? "Sportradar v2 sync active."
-        : "Sportradar disabled — set SPORTRADAR_API_KEY + SPORTRADAR_ENABLED=true. The current season is auto-detected (override with SPORTRADAR_SEASON_ID). Read models serve only data already synced from the API.",
+        : "Sportradar disabled — set SPORTRADAR_API_KEY + SPORTRADAR_ENABLED=true. Read models serve only data already synced from the API.",
     };
   }
 }
