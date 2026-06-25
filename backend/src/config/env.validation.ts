@@ -15,4 +15,7 @@ export const envValidationSchema = Joi.object({
   SPORTRADAR_BASE_URL: Joi.string().optional(),
   SPORTRADAR_ENABLED: Joi.string().valid('true', 'false').default('false'),
   SPORTRADAR_QPS: Joi.number().default(1),
+  SPORTRADAR_DAILY_LIMIT: Joi.number().default(1000),
+  SPORTRADAR_WORK_START_HOUR: Joi.number().min(0).max(23).default(9),
+  SPORTRADAR_WORK_END_HOUR: Joi.number().min(1).max(24).default(17),
 })

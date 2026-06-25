@@ -26,19 +26,19 @@ export class SyncScheduler implements OnApplicationBootstrap {
       .catch((e) => this.log.warn(`initial sync failed: ${e?.message ?? e}`))
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron('*/2 * * * *') // every 2 minutes (budget-friendly)
   async liveScores() {
     if (!this.sr.enabled) return
     await this.sr.syncLiveSummaries().catch((e) => this.log.warn(`live sync: ${e?.message ?? e}`))
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async schedule() {
     if (!this.sr.enabled) return
     await this.sr.syncSchedule().catch((e) => this.log.warn(`schedule sync: ${e?.message ?? e}`))
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async standings() {
     if (!this.sr.enabled) return
     await this.sr.syncStandings().catch((e) => this.log.warn(`standings sync: ${e?.message ?? e}`))

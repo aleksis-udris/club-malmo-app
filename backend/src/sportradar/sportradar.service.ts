@@ -8,6 +8,7 @@ import { SrRanking } from "./entities/sr-ranking.entity";
 import { SrStanding } from "./entities/sr-standing.entity";
 import { SrCompetitor } from "./entities/sr-competitor.entity";
 import { SrCalendarEvent } from "./entities/sr-calendar.entity";
+import { SyncState } from "./entities/sync-state.entity";
 
 function ymd(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -126,7 +127,28 @@ export class SportradarService {
     private readonly competitors: Repository<SrCompetitor>,
     @InjectRepository(SrCalendarEvent)
     private readonly calendar: Repository<SrCalendarEvent>,
+    @InjectRepository(SyncState)
+    private readonly syncStates: Repository<SyncState>,
   ) {}
+
+  /** One-time history backfill marker (persisted, so it survives restarts). */
+  private static readonly HISTORY_KEY = 'history:backfill'
+
+  async isHistoryBackfilled(): Promise<boolean> {
+    const row = await this.syncStates.findOne({
+      where: { resourceKey: SportradarService.HISTORY_KEY },
+    })
+    return !!row?.lastSyncedAt
+  }
+
+  private async markHistoryBackfilled(): Promise<void> {
+    await this.syncStates.save(
+      this.syncStates.create({
+        resourceKey: SportradarService.HISTORY_KEY,
+        lastSyncedAt: new Date(),
+      }),
+    )
+  }
 
   get enabled(): boolean {
     return !!this.config.get("sportradar.enabled");
@@ -235,25 +257,29 @@ export class SportradarService {
 
   async syncSchedule(): Promise<number> {
     let n = 0;
-    for (let i = 0; i < 7; i++) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const date = ymd(d)
-      const res = await this.client.get<any>(`schedule:${date}`, `/schedules/${date}/summaries.json`, 60)
-      if (!res.data) continue
-      const summaries: any[] = res.data?.summaries ?? []
-      for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0
+    // (1) Match/player data: pull the full schedule of the ACTIVE season (one
+    //     cached call covering all of that season's match dates).
+    const activeId = await this.resolveSeasonId();
+    if (activeId) n += await this.fetchSeasonSchedule(activeId);
+
+    // (2) Seasons/events discovery: look only 3 days forward (today..+3) across
+    //     all tournaments, to pick up newly scheduled events.
+    for (let i = 0; i <= 3; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const date = ymd(d);
+      const res = await this.client.get<any>(`schedule:${date}`, `/schedules/${date}/summaries.json`, 900);
+      if (!res.data) continue;
+      const summaries: any[] = res.data?.summaries ?? [];
+      for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0;
     }
-    // Fallback: no recent matches at all -> load the most recent season that has a schedule.
+
+    // Fallback: still nothing -> load the most recent season that has a schedule.
     if ((await this.events.count()) === 0) {
       const seasons = await this.seasonsFromCurrent();
       for (let i = 0; i < Math.min(seasons.length, 3); i++) {
         const m = await this.fetchSeasonSchedule(seasons[i].id);
         if (m > 0) {
-          if (i > 0)
-            this.log.log(
-              `No recent matches; using previous season ${seasons[i].name ?? seasons[i].id} (${m})`,
-            );
           n += m;
           break;
         }
@@ -274,6 +300,67 @@ export class SportradarService {
     let n = 0;
     for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0;
     return n;
+  }
+
+  /**
+   * Enumerate every season the API exposes: the competition-scoped seasons list
+   * if available, otherwise walk all competitions -> their seasons. Falls back to
+   * seasons derived from already-synced matches. De-duplicated by season id.
+   */
+  private async allSeasons(): Promise<any[]> {
+    const listed = await this.listSeasons()
+    if (listed.length) return listed
+
+    let comps: any[] = []
+    try {
+      const r = await this.client.get<any>('competitions', '/competitions.json', 86400)
+      comps = r.data?.competitions ?? []
+    } catch (e: any) {
+      this.log.debug(`competitions unavailable: ${e?.response?.status ?? e?.message}`)
+    }
+
+    const out: any[] = []
+    const seen = new Set<string>()
+    for (const c of comps) {
+      if (!c?.id) continue
+      try {
+        const r = await this.client.get<any>(
+          `comp-seasons:${c.id}`,
+          `/competitions/${c.id}/seasons.json`,
+          86400,
+        )
+        for (const se of r.data?.seasons ?? []) {
+          if (se?.id && !seen.has(se.id)) {
+            seen.add(se.id)
+            out.push(se)
+          }
+        }
+      } catch (e: any) {
+        this.log.debug(`seasons for ${c.id} unavailable: ${e?.response?.status ?? e?.message}`)
+      }
+    }
+    if (out.length) return out
+    return this.seasonsFromMatches()
+  }
+
+  /**
+   * Fetch the COMPLETE schedule (all history + all future matches) of every
+   * season, in one call per season. This is what populates past and upcoming
+   * matches beyond the rolling daily window.
+   */
+  async syncAllSeasonSchedules(): Promise<number> {
+    const seasons = await this.allSeasons()
+    let n = 0
+    for (const se of seasons) {
+      if (!se?.id) continue
+      try {
+        n += await this.fetchSeasonSchedule(se.id)
+      } catch (e: any) {
+        this.log.debug(`schedule for season ${se.id} failed: ${e?.response?.status ?? e?.message}`)
+      }
+    }
+    this.log.log(`Full season schedules synced: ${n} matches across ${seasons.length} seasons`)
+    return n
   }
 
   async syncLiveSummaries(): Promise<number> {
@@ -534,6 +621,22 @@ export class SportradarService {
     };
     await run("competitors", () => this.syncCompetitors());
     await run("calendar", () => this.syncCalendar());
+    // One-time full history backfill (all seasons, past + future). Persisted to
+    // the DB; subsequent boots skip this and serve history straight from the DB.
+    if (await this.isHistoryBackfilled()) {
+      out.history = "cached (db)";
+    } else if (!this.client.inWorkHours) {
+      out.history = "deferred (off-hours)";
+    } else {
+      await run("history", async () => {
+        const m = await this.syncAllSeasonSchedules();
+        // Only consider it done if we weren't cut off by the daily budget;
+        // otherwise it resumes on a later start with fresh budget.
+        if (!this.client.quotaExhausted) await this.markHistoryBackfilled();
+        else out.history = "partial (daily limit hit)";
+        return m;
+      });
+    }
     await run("schedule", () => this.syncSchedule());
     await run("live", () => this.syncLiveSummaries());
     await run("standings", () => this.syncStandings());
