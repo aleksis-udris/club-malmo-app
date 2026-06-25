@@ -11,12 +11,12 @@ const ENV_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined
 
 const API_BASES: string[] = ENV_BASE
   ? [ENV_BASE]
-  : ['http://192.168.1.123:3000/api/v1', 'http://localhost:3000/api/v1']
+  : ['http://192.168.1.5:3000/api/v1', 'http://localhost:3000/api/v1']
 
 // Remembered working base (set after the first successful request).
 let activeBase: string | null = null
 
-export const API_BASE: string = API_BASES[0]
+export const API_BASE: string = API_BASES[0] ?? 'http://localhost:3000/api/v1';
 
 export class ApiError extends Error {
   constructor(

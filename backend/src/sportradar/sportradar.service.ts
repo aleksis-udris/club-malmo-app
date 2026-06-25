@@ -132,7 +132,7 @@ export class SportradarService {
   ) {}
 
   /** One-time history backfill marker (persisted, so it survives restarts). */
-  private static readonly HISTORY_KEY = 'history:backfill'
+  private static readonly HISTORY_KEY = 'history:backfill:v2'
 
   async isHistoryBackfilled(): Promise<boolean> {
     const row = await this.syncStates.findOne({
@@ -289,17 +289,9 @@ export class SportradarService {
   }
 
   private async fetchSeasonSchedule(seasonId: string): Promise<number> {
-    if (!seasonId) return 0;
-    const res = await this.client.get<any>(
-      `season-schedule:${seasonId}`,
-      `/seasons/${seasonId}/schedules.json`,
-      3600,
-    );
-    if (!res.data) return 0;
-    const summaries: any[] = res.data?.summaries ?? res.data?.schedules ?? [];
-    let n = 0;
-    for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0;
-    return n;
+    // Squash v2 has no `/seasons/{id}/schedules.json` (404). Season Summaries
+    // returns the full schedule (past + future) and stamps the season id.
+    return this.syncSeasonSummaries(seasonId);
   }
 
   /**

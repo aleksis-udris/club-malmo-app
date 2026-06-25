@@ -20,13 +20,13 @@ async function bootstrap() {
   app.enableCors({ origin: corsOrigin === '*' ? true : corsOrigin, credentials: true })
 
   const port = config.get<number>('port') ?? 3000
-  // Bind to 0.0.0.0 so the API is reachable on the LAN IP (e.g. 192.168.1.123)
-  // AND on localhost at the same time. Override the interface with HOST if needed.
+  // Bind to 0.0.0.0 so the API is reachable on the LAN IP AND localhost at once.
+  // Override the interface with HOST if needed.
   const host = process.env.HOST ?? '0.0.0.0'
   await app.listen(port, host)
 
   const log = new Logger('Bootstrap')
-  log.log(`Backend listening on http://192.168.1.123:${port}/api/v1 (LAN)`)
+  log.log(`Backend listening on http://192.168.1.5:${port}/api/v1 (LAN)`)
   log.log(`Backend listening on http://localhost:${port}/api/v1 (local)`)
 }
 bootstrap()
