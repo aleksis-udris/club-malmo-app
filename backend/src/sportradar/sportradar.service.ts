@@ -17,46 +17,230 @@ function ymd(d: Date): string {
 // anything not here renders as the country code initials instead of a blank flag.
 const A3: Record<string, string> = {
   // ISO 3166-1 alpha-3 -> alpha-2 (full set)
-  AFG: 'AF', ALB: 'AL', DZA: 'DZ', AND: 'AD', AGO: 'AO', ATG: 'AG', ARG: 'AR',
-  ARM: 'AM', AUS: 'AU', AUT: 'AT', AZE: 'AZ', BHS: 'BS', BHR: 'BH', BGD: 'BD',
-  BRB: 'BB', BLR: 'BY', BEL: 'BE', BLZ: 'BZ', BEN: 'BJ', BTN: 'BT', BOL: 'BO',
-  BIH: 'BA', BWA: 'BW', BRA: 'BR', BRN: 'BN', BGR: 'BG', BFA: 'BF', BDI: 'BI',
-  CPV: 'CV', KHM: 'KH', CMR: 'CM', CAN: 'CA', CAF: 'CF', TCD: 'TD', CHL: 'CL',
-  CHN: 'CN', COL: 'CO', COM: 'KM', COG: 'CG', COD: 'CD', CRI: 'CR', CIV: 'CI',
-  HRV: 'HR', CUB: 'CU', CYP: 'CY', CZE: 'CZ', DNK: 'DK', DJI: 'DJ', DMA: 'DM',
-  DOM: 'DO', ECU: 'EC', EGY: 'EG', SLV: 'SV', GNQ: 'GQ', ERI: 'ER', EST: 'EE',
-  SWZ: 'SZ', ETH: 'ET', FJI: 'FJ', FIN: 'FI', FRA: 'FR', GAB: 'GA', GMB: 'GM',
-  GEO: 'GE', DEU: 'DE', GHA: 'GH', GRC: 'GR', GRD: 'GD', GTM: 'GT', GIN: 'GN',
-  GNB: 'GW', GUY: 'GY', HTI: 'HT', HND: 'HN', HUN: 'HU', ISL: 'IS', IND: 'IN',
-  IDN: 'ID', IRN: 'IR', IRQ: 'IQ', IRL: 'IE', ISR: 'IL', ITA: 'IT', JAM: 'JM',
-  JPN: 'JP', JOR: 'JO', KAZ: 'KZ', KEN: 'KE', KIR: 'KI', PRK: 'KP', KOR: 'KR',
-  KWT: 'KW', KGZ: 'KG', LAO: 'LA', LVA: 'LV', LBN: 'LB', LSO: 'LS', LBR: 'LR',
-  LBY: 'LY', LIE: 'LI', LTU: 'LT', LUX: 'LU', MDG: 'MG', MWI: 'MW', MYS: 'MY',
-  MDV: 'MV', MLI: 'ML', MLT: 'MT', MHL: 'MH', MRT: 'MR', MUS: 'MU', MEX: 'MX',
-  FSM: 'FM', MDA: 'MD', MCO: 'MC', MNG: 'MN', MNE: 'ME', MAR: 'MA', MOZ: 'MZ',
-  MMR: 'MM', NAM: 'NA', NRU: 'NR', NPL: 'NP', NLD: 'NL', NZL: 'NZ', NIC: 'NI',
-  NER: 'NE', NGA: 'NG', NOR: 'NO', OMN: 'OM', PAK: 'PK', PLW: 'PW', PAN: 'PA',
-  PNG: 'PG', PRY: 'PY', PER: 'PE', PHL: 'PH', POL: 'PL', PRT: 'PT', QAT: 'QA',
-  ROU: 'RO', RUS: 'RU', RWA: 'RW', KNA: 'KN', LCA: 'LC', VCT: 'VC', WSM: 'WS',
-  SMR: 'SM', STP: 'ST', SAU: 'SA', SEN: 'SN', SRB: 'RS', SYC: 'SC', SLE: 'SL',
-  SGP: 'SG', SVK: 'SK', SVN: 'SI', SLB: 'SB', SOM: 'SO', ZAF: 'ZA', SSD: 'SS',
-  ESP: 'ES', LKA: 'LK', SDN: 'SD', SUR: 'SR', SWE: 'SE', CHE: 'CH', SYR: 'SY',
-  TWN: 'TW', TJK: 'TJ', TZA: 'TZ', THA: 'TH', TLS: 'TL', TGO: 'TG', TON: 'TO',
-  TTO: 'TT', TUN: 'TN', TUR: 'TR', TKM: 'TM', TUV: 'TV', UGA: 'UG', UKR: 'UA',
-  ARE: 'AE', GBR: 'GB', USA: 'US', URY: 'UY', UZB: 'UZ', VUT: 'VU', VEN: 'VE',
-  VNM: 'VN', YEM: 'YE', ZMB: 'ZM', ZWE: 'ZW',
+  AFG: "AF",
+  ALB: "AL",
+  DZA: "DZ",
+  AND: "AD",
+  AGO: "AO",
+  ATG: "AG",
+  ARG: "AR",
+  ARM: "AM",
+  AUS: "AU",
+  AUT: "AT",
+  AZE: "AZ",
+  BHS: "BS",
+  BHR: "BH",
+  BGD: "BD",
+  BRB: "BB",
+  BLR: "BY",
+  BEL: "BE",
+  BLZ: "BZ",
+  BEN: "BJ",
+  BTN: "BT",
+  BOL: "BO",
+  BIH: "BA",
+  BWA: "BW",
+  BRA: "BR",
+  BRN: "BN",
+  BGR: "BG",
+  BFA: "BF",
+  BDI: "BI",
+  CPV: "CV",
+  KHM: "KH",
+  CMR: "CM",
+  CAN: "CA",
+  CAF: "CF",
+  TCD: "TD",
+  CHL: "CL",
+  CHN: "CN",
+  COL: "CO",
+  COM: "KM",
+  COG: "CG",
+  COD: "CD",
+  CRI: "CR",
+  CIV: "CI",
+  HRV: "HR",
+  CUB: "CU",
+  CYP: "CY",
+  CZE: "CZ",
+  DNK: "DK",
+  DJI: "DJ",
+  DMA: "DM",
+  DOM: "DO",
+  ECU: "EC",
+  EGY: "EG",
+  SLV: "SV",
+  GNQ: "GQ",
+  ERI: "ER",
+  EST: "EE",
+  SWZ: "SZ",
+  ETH: "ET",
+  FJI: "FJ",
+  FIN: "FI",
+  FRA: "FR",
+  GAB: "GA",
+  GMB: "GM",
+  GEO: "GE",
+  DEU: "DE",
+  GHA: "GH",
+  GRC: "GR",
+  GRD: "GD",
+  GTM: "GT",
+  GIN: "GN",
+  GNB: "GW",
+  GUY: "GY",
+  HTI: "HT",
+  HND: "HN",
+  HUN: "HU",
+  ISL: "IS",
+  IND: "IN",
+  IDN: "ID",
+  IRN: "IR",
+  IRQ: "IQ",
+  IRL: "IE",
+  ISR: "IL",
+  ITA: "IT",
+  JAM: "JM",
+  JPN: "JP",
+  JOR: "JO",
+  KAZ: "KZ",
+  KEN: "KE",
+  KIR: "KI",
+  PRK: "KP",
+  KOR: "KR",
+  KWT: "KW",
+  KGZ: "KG",
+  LAO: "LA",
+  LVA: "LV",
+  LBN: "LB",
+  LSO: "LS",
+  LBR: "LR",
+  LBY: "LY",
+  LIE: "LI",
+  LTU: "LT",
+  LUX: "LU",
+  MDG: "MG",
+  MWI: "MW",
+  MYS: "MY",
+  MDV: "MV",
+  MLI: "ML",
+  MLT: "MT",
+  MHL: "MH",
+  MRT: "MR",
+  MUS: "MU",
+  MEX: "MX",
+  FSM: "FM",
+  MDA: "MD",
+  MCO: "MC",
+  MNG: "MN",
+  MNE: "ME",
+  MAR: "MA",
+  MOZ: "MZ",
+  MMR: "MM",
+  NAM: "NA",
+  NRU: "NR",
+  NPL: "NP",
+  NLD: "NL",
+  NZL: "NZ",
+  NIC: "NI",
+  NER: "NE",
+  NGA: "NG",
+  NOR: "NO",
+  OMN: "OM",
+  PAK: "PK",
+  PLW: "PW",
+  PAN: "PA",
+  PNG: "PG",
+  PRY: "PY",
+  PER: "PE",
+  PHL: "PH",
+  POL: "PL",
+  PRT: "PT",
+  QAT: "QA",
+  ROU: "RO",
+  RUS: "RU",
+  RWA: "RW",
+  KNA: "KN",
+  LCA: "LC",
+  VCT: "VC",
+  WSM: "WS",
+  SMR: "SM",
+  STP: "ST",
+  SAU: "SA",
+  SEN: "SN",
+  SRB: "RS",
+  SYC: "SC",
+  SLE: "SL",
+  SGP: "SG",
+  SVK: "SK",
+  SVN: "SI",
+  SLB: "SB",
+  SOM: "SO",
+  ZAF: "ZA",
+  SSD: "SS",
+  ESP: "ES",
+  LKA: "LK",
+  SDN: "SD",
+  SUR: "SR",
+  SWE: "SE",
+  CHE: "CH",
+  SYR: "SY",
+  TWN: "TW",
+  TJK: "TJ",
+  TZA: "TZ",
+  THA: "TH",
+  TLS: "TL",
+  TGO: "TG",
+  TON: "TO",
+  TTO: "TT",
+  TUN: "TN",
+  TUR: "TR",
+  TKM: "TM",
+  TUV: "TV",
+  UGA: "UG",
+  UKR: "UA",
+  ARE: "AE",
+  GBR: "GB",
+  USA: "US",
+  URY: "UY",
+  UZB: "UZ",
+  VUT: "VU",
+  VEN: "VE",
+  VNM: "VN",
+  YEM: "YE",
+  ZMB: "ZM",
+  ZWE: "ZW",
   // Common IOC / Sportradar aliases that differ from ISO-3
-  ENG: 'GB', SCO: 'GB', WAL: 'GB', NIR: 'GB', GER: 'DE', NED: 'NL', SUI: 'CH',
-  POR: 'PT', GRE: 'GR', RSA: 'ZA', NGR: 'NG', MAS: 'MY', KSA: 'SA', UAE: 'AE',
-  CRO: 'HR', SLO: 'SI', BUL: 'BG', LAT: 'LV', CHI: 'CL', DEN: 'DK', POL2: 'PL',
-}
+  ENG: "GB",
+  SCO: "GB",
+  WAL: "GB",
+  NIR: "GB",
+  GER: "DE",
+  NED: "NL",
+  SUI: "CH",
+  POR: "PT",
+  GRE: "GR",
+  RSA: "ZA",
+  NGR: "NG",
+  MAS: "MY",
+  KSA: "SA",
+  UAE: "AE",
+  CRO: "HR",
+  SLO: "SI",
+  BUL: "BG",
+  LAT: "LV",
+  CHI: "CL",
+  DEN: "DK",
+  POL2: "PL",
+};
 // 2 = Sweden, 1 = nearby Nordic/Baltic, 0 = elsewhere.
 function regionPriority(code?: string | null, text?: string | null): number {
-  const cc = (code ?? '').toUpperCase()
-  const t = (text ?? '').toLowerCase()
-  if (cc === 'SE' || cc === 'SWE' || t.includes('sweden') || t.includes('malm')) return 2
-  if (NEAR_SWEDEN.has(cc) || NEAR_SWEDEN.has(A3[cc] ?? '')) return 1
-  return 0
+  const cc = (code ?? "").toUpperCase();
+  const t = (text ?? "").toLowerCase();
+  if (cc === "SE" || cc === "SWE" || t.includes("sweden") || t.includes("malm"))
+    return 2;
+  if (NEAR_SWEDEN.has(cc) || NEAR_SWEDEN.has(A3[cc] ?? "")) return 1;
+  return 0;
 }
 function flag(code?: string | null): string {
   if (!code) return "";
@@ -235,14 +419,18 @@ export class SportradarService {
 
   async syncSchedule(): Promise<number> {
     let n = 0;
-    for (let i = 0; i < 7; i++) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const date = ymd(d)
-      const res = await this.client.get<any>(`schedule:${date}`, `/schedules/${date}/summaries.json`, 60)
-      if (!res.data) continue
-      const summaries: any[] = res.data?.summaries ?? []
-      for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0
+    for (let i = -4; i <= 3; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i); // <-- was: d.getDate() - i
+      const date = ymd(d);
+      const res = await this.client.get<any>(
+        `schedule:${date}`,
+        `/schedules/${date}/summaries.json`,
+        60,
+      );
+      if (!res.data) continue;
+      const summaries: any[] = res.data?.summaries ?? [];
+      for (const s of summaries) n += (await this.upsertEvent(s)) ? 1 : 0;
     }
     // Fallback: no recent matches at all -> load the most recent season that has a schedule.
     if ((await this.events.count()) === 0) {
@@ -543,14 +731,26 @@ export class SportradarService {
   /* ---- Read models shaped for the frontend (no origin calls) -------- */
 
   private toMatch(e: SrEvent) {
-    const st = (e.payload as any)?.sport_event_status ?? {}
-    const comp = (e.payload as any)?.sport_event?.competitors ?? []
-    const raw = (e.status ?? '').toLowerCase()
-    const status = ['closed', 'ended', 'complete', 'completed', 'finished'].includes(raw)
-      ? 'finished'
-      : ['live', 'inprogress', 'in_progress', 'started', 'interrupted'].includes(raw)
-        ? 'live'
-        : 'upcoming'
+    const st = (e.payload as any)?.sport_event_status ?? {};
+    const comp = (e.payload as any)?.sport_event?.competitors ?? [];
+    const raw = (e.status ?? "").toLowerCase();
+    const status = [
+      "closed",
+      "ended",
+      "complete",
+      "completed",
+      "finished",
+    ].includes(raw)
+      ? "finished"
+      : [
+            "live",
+            "inprogress",
+            "in_progress",
+            "started",
+            "interrupted",
+          ].includes(raw)
+        ? "live"
+        : "upcoming";
     const score =
       st.home_score != null && st.away_score != null
         ? `${st.home_score}-${st.away_score}`
@@ -612,18 +812,18 @@ export class SportradarService {
   async getMatchDays(seasonId?: string) {
     const rows = seasonId
       ? await this.eventsForSeason(seasonId)
-      : await this.events.find({ order: { scheduled: 'DESC' }, take: 1000 })
-    const byDay = new Map<string, SrEvent[]>()
+      : await this.events.find({ order: { scheduled: "DESC" }, take: 1000 });
+    const byDay = new Map<string, SrEvent[]>();
     for (const e of rows) {
       const day = e.scheduled ? ymd(new Date(e.scheduled)) : "unknown";
       if (!byDay.has(day)) byDay.set(day, []);
       byDay.get(day)!.push(e);
     }
-    const today = ymd(new Date())
+    const today = ymd(new Date());
     // Newest day first; return every day (all tournaments, or the whole season).
-    const days = [...byDay.entries()].sort((a, b) => b[0].localeCompare(a[0]))
+    const days = [...byDay.entries()].sort((a, b) => b[0].localeCompare(a[0]));
     return days.map(([date, evs]) => {
-      evs.sort((a, b) => this.eventPriority(b) - this.eventPriority(a))
+      evs.sort((a, b) => this.eventPriority(b) - this.eventPriority(a));
       return {
         date,
         label: date === today ? "Today" : date,
@@ -653,7 +853,7 @@ export class SportradarService {
    */
   /** Per-competitor tally (played/won/lost/games) derived from synced matches. */
   private async competitorStats(eventsArg?: SrEvent[]) {
-    const events = eventsArg ?? (await this.events.find({ take: 1000 }))
+    const events = eventsArg ?? (await this.events.find({ take: 1000 }));
     const tbl = new Map<
       string,
       {
@@ -717,7 +917,7 @@ export class SportradarService {
   }
 
   private async computeStandings(eventsArg?: SrEvent[]) {
-    const tbl = await this.competitorStats(eventsArg)
+    const tbl = await this.competitorStats(eventsArg);
     return [...tbl.values()]
       .sort((x, y) => y.won - x.won || x.lost - y.lost || y.played - x.played)
       .map((r, i) => ({
@@ -743,18 +943,24 @@ export class SportradarService {
     return computed.length > stored.length ? computed : stored;
   }
 
-  async getStandings(bracket: 'top' | 'bottom', seasonId?: string) {
+  async getStandings(bracket: "top" | "bottom", seasonId?: string) {
     const rows = seasonId
       ? await this.computeStandings(await this.eventsForSeason(seasonId))
-      : await this.standingsRows()
-    return rows.filter((r) => (bracket === 'bottom' ? r.position > 8 : r.position <= 8))
+      : await this.standingsRows();
+    return rows.filter((r) =>
+      bracket === "bottom" ? r.position > 8 : r.position <= 8,
+    );
   }
 
-  async getLatest(_bracket: 'top' | 'bottom', seasonId?: string) {
+  async getLatest(_bracket: "top" | "bottom", seasonId?: string) {
     const base = seasonId
       ? await this.eventsForSeason(seasonId)
-      : await this.events.find({ where: { status: 'closed' }, order: { scheduled: 'DESC' }, take: 60 })
-    const rows = base.filter((e) => e.status === 'closed')
+      : await this.events.find({
+          where: { status: "closed" },
+          order: { scheduled: "DESC" },
+          take: 60,
+        });
+    const rows = base.filter((e) => e.status === "closed");
     rows.sort(
       (a, b) =>
         this.eventPriority(b) - this.eventPriority(a) ||
@@ -797,8 +1003,16 @@ export class SportradarService {
 
   /** Identity (name/country/gender) of every player seen in synced matches. */
   private async playersFromMatches(eventsArg?: SrEvent[]) {
-    const events = eventsArg ?? (await this.events.find({ take: 1000 }))
-    const map = new Map<string, { name: string; code: string | null; country: string | null; gender: string | null }>()
+    const events = eventsArg ?? (await this.events.find({ take: 1000 }));
+    const map = new Map<
+      string,
+      {
+        name: string;
+        code: string | null;
+        country: string | null;
+        gender: string | null;
+      }
+    >();
     for (const e of events) {
       const ctx = (e.payload as any)?.sport_event?.sport_event_context ?? {};
       const gender = ctx.competition?.gender ?? null;
@@ -825,8 +1039,8 @@ export class SportradarService {
    */
   /** Build the player list (identity + stats + global rank) from a set of events. */
   private async buildPlayers(eventsArg?: SrEvent[]) {
-    const fromMatches = await this.playersFromMatches(eventsArg)
-    const stats = await this.competitorStats(eventsArg)
+    const fromMatches = await this.playersFromMatches(eventsArg);
+    const stats = await this.competitorStats(eventsArg);
     if (!eventsArg) {
       // Merge any synced competitor records (only for the full/global view).
       for (const c of await this.competitors.find()) {
@@ -836,14 +1050,17 @@ export class SportradarService {
             code: c.countryCode,
             country: c.country,
             gender: c.gender ?? null,
-          })
+          });
         }
       }
     }
-    const rankById = new Map<string, number>()
-    ;[...stats.entries()]
-      .sort(([, x], [, y]) => y.won - x.won || x.lost - y.lost || y.played - x.played)
-      .forEach(([id], i) => rankById.set(id, i + 1))
+    const rankById = new Map<string, number>();
+    [...stats.entries()]
+      .sort(
+        ([, x], [, y]) =>
+          y.won - x.won || x.lost - y.lost || y.played - x.played,
+      )
+      .forEach(([id], i) => rankById.set(id, i + 1));
     const players = [...fromMatches.entries()].map(([id, m]) => {
       const st = stats.get(id);
       const decided = (st?.won ?? 0) + (st?.lost ?? 0);
@@ -858,35 +1075,36 @@ export class SportradarService {
         games: st ? `${st.gamesWon}-${st.gamesLost}` : "0-0",
         winPct: decided ? Math.round(((st?.won ?? 0) / decided) * 100) : 0,
         rank: rankById.get(id) ?? null,
-      }
-    })
+      };
+    });
     const byRank = (
       a: { rank: number | null; name: string },
       b: { rank: number | null; name: string },
-    ) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name)
-    return players.sort(byRank)
+    ) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name);
+    return players.sort(byRank);
   }
 
   async getSweden(seasonId?: string) {
-    const events = seasonId ? await this.eventsForSeason(seasonId) : undefined
-    const players = await this.buildPlayers(events)
-    const isFemale = (p: { gender: string | null }) => (p.gender ?? '').toLowerCase() === 'female'
-    const women = players.filter(isFemale)
-    const men = players.filter((p) => !isFemale(p))
+    const events = seasonId ? await this.eventsForSeason(seasonId) : undefined;
+    const players = await this.buildPlayers(events);
+    const isFemale = (p: { gender: string | null }) =>
+      (p.gender ?? "").toLowerCase() === "female";
+    const women = players.filter(isFemale);
+    const men = players.filter((p) => !isFemale(p));
     const isSwe = (p: { country: { code: string; name: string } }) => {
-      const code = (p.country.code ?? '').toUpperCase()
-      const name = (p.country.name ?? '').toLowerCase()
-      return code === 'SE' || code.startsWith('SWE') || name === 'sweden'
-    }
-    const sweden = players.filter(isSwe)
-    const countries: Record<string, number> = {}
+      const code = (p.country.code ?? "").toUpperCase();
+      const name = (p.country.name ?? "").toLowerCase();
+      return code === "SE" || code.startsWith("SWE") || name === "sweden";
+    };
+    const sweden = players.filter(isSwe);
+    const countries: Record<string, number> = {};
     for (const p of players) {
       const k = p.country.name || p.country.code || "—";
       countries[k] = (countries[k] ?? 0) + 1;
     }
     const groupStandings = (
       events ? await this.computeStandings(events) : await this.standingsRows()
-    ).slice(0, 8)
+    ).slice(0, 8);
     return {
       groupStandings,
       overallStats: [],
@@ -900,21 +1118,22 @@ export class SportradarService {
 
   /** Fetch a season's full match list on demand (Season Summaries endpoint). */
   async syncSeasonSummaries(seasonId: string): Promise<number> {
-    if (!seasonId) return 0
-    let res: any
+    if (!seasonId) return 0;
+    let res: any;
     try {
       res = await this.client.get<any>(
         `season-summaries:${seasonId}`,
         `/seasons/${seasonId}/summaries.json`,
         3600,
-      )
+      );
     } catch {
-      return 0
+      return 0;
     }
-    const summaries: any[] = res.data?.summaries ?? []
-    let n = 0
-    for (const s of summaries) n += (await this.upsertEvent(s, seasonId)) ? 1 : 0
-    return n
+    const summaries: any[] = res.data?.summaries ?? [];
+    let n = 0;
+    for (const s of summaries)
+      n += (await this.upsertEvent(s, seasonId)) ? 1 : 0;
+    return n;
   }
 
   /** Detail for one calendar event (a season): info + matches + players + standings. */
@@ -925,33 +1144,40 @@ export class SportradarService {
    * of the tournament.
    */
   private async eventsForSeason(seasonId: string): Promise<SrEvent[]> {
-    await this.syncSeasonSummaries(seasonId)
+    await this.syncSeasonSummaries(seasonId);
     return (await this.events.find({ take: 5000 })).filter(
       (e) =>
         e.seasonId === seasonId ||
-        (e.payload as any)?.sport_event?.sport_event_context?.season?.id === seasonId,
-    )
+        (e.payload as any)?.sport_event?.sport_event_context?.season?.id ===
+          seasonId,
+    );
   }
 
   async getEvent(seasonId: string) {
-    const events = await this.eventsForSeason(seasonId)
-    const cal = await this.calendar.findOne({ where: { id: seasonId } })
-    const ctxSeason = (events[0]?.payload as any)?.sport_event?.sport_event_context?.season
+    const events = await this.eventsForSeason(seasonId);
+    const cal = await this.calendar.findOne({ where: { id: seasonId } });
+    const ctxSeason = (events[0]?.payload as any)?.sport_event
+      ?.sport_event_context?.season;
     const info = {
       id: seasonId,
       name: cal?.name ?? ctxSeason?.name ?? seasonId,
       gender: cal?.gender ?? null,
       dateFrom: cal?.startDate ?? ctxSeason?.start_date ?? null,
       dateTo: cal?.endDate ?? ctxSeason?.end_date ?? null,
-      country: country(cal?.countryName ?? cal?.countryCode ?? '', cal?.countryCode ?? null),
+      country: country(
+        cal?.countryName ?? cal?.countryCode ?? "",
+        cal?.countryCode ?? null,
+      ),
       venue: cal?.venue ?? null,
-    }
+    };
     const matches = [...events]
-      .sort((a, b) => (b.scheduled?.getTime() ?? 0) - (a.scheduled?.getTime() ?? 0))
-      .map((e) => this.toMatch(e))
-    const players = await this.buildPlayers(events)
-    const standings = await this.computeStandings(events)
-    return { info, matches, players, standings }
+      .sort(
+        (a, b) => (b.scheduled?.getTime() ?? 0) - (a.scheduled?.getTime() ?? 0),
+      )
+      .map((e) => this.toMatch(e));
+    const players = await this.buildPlayers(events);
+    const standings = await this.computeStandings(events);
+    return { info, matches, players, standings };
   }
 
   getLive() {

@@ -16,7 +16,7 @@ const API_BASES: string[] = ENV_BASE
 // Remembered working base (set after the first successful request).
 let activeBase: string | null = null
 
-export const API_BASE: string = API_BASES[0]
+export const API_BASE: string = API_BASES[0] ?? 'http://localhost:3000'
 
 export class ApiError extends Error {
   constructor(
@@ -29,9 +29,7 @@ export class ApiError extends Error {
 
 export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   // Try the cached base first, then the remaining candidates in order.
-  const bases = activeBase
-    ? [activeBase, ...API_BASES.filter((b) => b !== activeBase)]
-    : API_BASES
+  const bases = activeBase ? [activeBase, ...API_BASES.filter((b) => b !== activeBase)] : API_BASES
 
   let lastNetworkError = false
   for (const base of bases) {
@@ -49,7 +47,5 @@ export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> 
   }
 
   void lastNetworkError
-  throw new ApiError(
-    `Cannot reach the API at ${API_BASES.join(' or ')}. Is the backend running?`,
-  )
+  throw new ApiError(`Cannot reach the API at ${API_BASES.join(' or ')}. Is the backend running?`)
 }
